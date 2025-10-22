@@ -7,7 +7,7 @@ import { useLocalStorage, loadFromLocalStorage } from '@/hooks/useLocalStorage';
 import { ALL_STOCKS, STORAGE_KEYS } from '@/lib/constants';
 import { aggregateData } from '@/lib/utils';
 import { Timeframe, ChartMode, Alert, BacktestResult } from '@/lib/types';
-import { Header } from '@/components/Header';
+import {Header} from '@/components/Header';
 import { Summary } from '@/components/Summary';
 import { Controls } from '@/components/Controls';
 import { StockSelector } from '@/components/StockSelector';
@@ -108,10 +108,11 @@ export default function Home() {
           onClearData={() => {
             setChartData({});
             setCurrentData({});
-          }}
+          } }
           onShowAIAssistant={() => setShowAIAssistant(true)}
-          onShowAIChat={() => setShowAIChat(true)}
-        />
+          onShowAIChat={() => setShowAIChat(true)} onShowPortfolioOptimizer={function (): void {
+            throw new Error('Function not implemented.');
+          } }/>
 
         <Summary currentData={currentData} receivedStocks={receivedStocks} />
 

@@ -1,9 +1,9 @@
 "use client";
 
-import { JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal, JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal, useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArbitrageData, ChartDataPoint } from '@/lib/types';
-import { generateTradeSignal, analyzeMarket, AITradeSignal, AIMarketAnalysis } from '@/lib/ai-services';
+import { generateTradeSignal, analyzeMarket, AITradeSignal, AIMarketAnalysis } from '@/lib/ai-client';
 import toast from 'react-hot-toast';
 
 interface AITradeAssistantProps {
@@ -127,7 +127,7 @@ export function AITradeAssistant({ stock, historicalData }: AITradeAssistantProp
               <div className="space-y-2">
                 <p className="text-white font-semibold text-sm">Key Reasoning:</p>
                 <ul className="space-y-1">
-                  {signal.reasoning.map((reason: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined, idx: Key | null | undefined) => (
+                  {signal.reasoning.map((reason, idx) => (
                     <li key={idx} className="text-slate-300 text-sm flex items-start gap-2">
                       <span className="text-purple-400">•</span>
                       <span>{reason}</span>
@@ -161,7 +161,7 @@ export function AITradeAssistant({ stock, historicalData }: AITradeAssistantProp
                 <div>
                   <p className="text-white font-semibold text-sm mb-2">Key Factors:</p>
                   <ul className="space-y-1">
-                    {analysis.keyFactors.map((factor: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined, idx: Key | null | undefined) => (
+                    {analysis.keyFactors.map((factor, idx) => (
                       <li key={idx} className="text-slate-300 text-sm flex items-start gap-2">
                         <span className="text-cyan-400">→</span>
                         <span>{factor}</span>

@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArbitrageData } from '@/lib/types';
-import { chatWithAI } from '@/lib/ai-services';
+import { chatWithAI } from '@/lib/ai-client';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -62,7 +62,7 @@ export function AIChatAssistant({ currentData, selectedStock }: AIChatAssistantP
     } catch (error) {
       const errorMessage: Message = {
         role: 'assistant',
-        content: 'Sorry, I encountered an error. Please try again.',
+        content: 'Sorry, I encountered an error connecting to the AI service. Please check your backend connection.',
         timestamp: Date.now(),
       };
       setMessages(prev => [...prev, errorMessage]);

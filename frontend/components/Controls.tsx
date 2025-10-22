@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from 'react';
 import { Timeframe, ChartMode } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import toast from 'react-hot-toast';
@@ -25,6 +26,13 @@ export function Controls({
   compareStocks,
   setCompareStocks,
 }: ControlsProps) {
+  const [mounted, setMounted] = useState(false);
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const handleThresholdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value);
     if (!isNaN(value)) {
@@ -33,6 +41,21 @@ export function Controls({
       setThreshold(0);
     }
   };
+
+  // Don't render until mounted to prevent hydration errors
+  if (!mounted) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        {[1, 2, 3, 4].map((i) => (
+          <Card key={i} className="bg-slate-900/50 border-slate-800">
+            <CardContent className="pt-6">
+              <div className="h-20 animate-pulse bg-slate-800 rounded"></div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">

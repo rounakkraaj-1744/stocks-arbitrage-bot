@@ -1,8 +1,11 @@
+import dotenv from "dotenv"
+dotenv.config()
+
 export const AI_CONFIG = {
   GROQ_API_KEY: process.env.GROQ_API_KEY || '',
   GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
   MODEL_GROQ: 'llama-3.1-70b-versatile',
-  MODEL_GEMINI: 'gemini-1.5-flash',
+  MODEL_GEMINI: 'gemini-2.5-flash',
 };
 
 export const AI_PROMPTS = {

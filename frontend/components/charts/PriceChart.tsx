@@ -15,25 +15,54 @@ interface PriceChartProps {
 }
 
 export function PriceChart({ data, chartMode, compareStocks, height = 400 }: PriceChartProps) {
-  const categories = data.map((point) => point.time);
-
-  // Line chart series
+  // Line chart series with timestamps and validation
   const lineChartSeries = useMemo(() => {
     if (compareStocks && compareStocks.length > 0) {
       return compareStocks.map((stock) => ({
         name: `${stock.name} Spread`,
-        data: stock.data.map((point) => point.spread),
+        data: stock.data
+          .filter(point => {
+            // Filter out invalid data points
+            return point.timestamp && 
+                   typeof point.spread === 'number' && 
+                   !isNaN(point.spread) &&
+                   isFinite(point.spread);
+          })
+          .map((point) => ({
+            x: point.timestamp,
+            y: point.spread,
+          })),
       }));
     }
 
     return [
       {
         name: "Spot Price",
-        data: data.map((point) => point.spot),
+        data: data
+          .filter(point => {
+            return point.timestamp && 
+                   typeof point.spot === 'number' && 
+                   !isNaN(point.spot) &&
+                   isFinite(point.spot);
+          })
+          .map((point) => ({
+            x: point.timestamp,
+            y: point.spot,
+          })),
       },
       {
         name: "Futures Price",
-        data: data.map((point) => point.futures),
+        data: data
+          .filter(point => {
+            return point.timestamp && 
+                   typeof point.futures === 'number' && 
+                   !isNaN(point.futures) &&
+                   isFinite(point.futures);
+          })
+          .map((point) => ({
+            x: point.timestamp,
+            y: point.futures,
+          })),
       },
     ];
   }, [data, compareStocks]);
@@ -44,14 +73,19 @@ export function PriceChart({ data, chartMode, compareStocks, height = 400 }: Pri
     
     const validData = data
       .filter(point => {
-        return point.open != null && 
+        return point.timestamp &&
+               point.open != null && 
                point.high != null && 
                point.low != null && 
                point.close != null &&
                !isNaN(point.open) &&
                !isNaN(point.high) &&
                !isNaN(point.low) &&
-               !isNaN(point.close);
+               !isNaN(point.close) &&
+               isFinite(point.open) &&
+               isFinite(point.high) &&
+               isFinite(point.low) &&
+               isFinite(point.close);
       })
       .map((point) => {
         const open = point.open!;
@@ -63,7 +97,7 @@ export function PriceChart({ data, chartMode, compareStocks, height = 400 }: Pri
         const actualLow = Math.min(open, high, low, close);
         
         return {
-          x: new Date(point.timestamp).getTime(),
+          x: point.timestamp,
           y: [open, actualHigh, actualLow, close],
         };
       });
@@ -148,7 +182,10 @@ export function PriceChart({ data, chartMode, compareStocks, height = 400 }: Pri
           colors: ["#64748b"],
           fontSize: '11px',
         },
-        formatter: (val) => val ? `₹${val.toFixed(2)}` : 'N/A',
+        formatter: (val) => {
+          if (val == null || isNaN(val) || !isFinite(val)) return 'N/A';
+          return `₹${val.toFixed(2)}`;
+        },
       },
       tooltip: { 
         enabled: true 
@@ -306,24 +343,38 @@ export function PriceChart({ data, chartMode, compareStocks, height = 400 }: Pri
       theme: "dark",
       x: {
         show: true,
+        format: 'dd MMM HH:mm',
       },
       y: {
         formatter: (val) => {
-          if (val == null || isNaN(val)) return "N/A";
+          if (val == null || isNaN(val) || !isFinite(val)) return "N/A";
           return compareStocks && compareStocks.length > 0 ? `${val.toFixed(2)}%` : `₹${val.toFixed(2)}`;
         },
       },
     },
     xaxis: {
-      categories: categories,
+      type: "datetime",
       labels: {
-        rotate: -45,
-        rotateAlways: true,
-        hideOverlappingLabels: true,
-        style: { colors: "#64748b", fontSize: "11px" },
+        style: { 
+          colors: "#64748b", 
+          fontSize: "11px" 
+        },
+        datetimeFormatter: {
+          year: 'yyyy',
+          month: "MMM 'yy",
+          day: 'dd MMM',
+          hour: 'HH:mm',
+          minute: 'HH:mm',
+        },
       },
-      axisBorder: { show: true, color: "#334155" },
-      axisTicks: { show: true, color: "#334155" },
+      axisBorder: { 
+        show: true, 
+        color: "#334155" 
+      },
+      axisTicks: { 
+        show: true, 
+        color: "#334155" 
+      },
     },
     yaxis: {
       title: { 
@@ -333,7 +384,7 @@ export function PriceChart({ data, chartMode, compareStocks, height = 400 }: Pri
       labels: {
         style: { colors: ["#64748b"] },
         formatter: (val) => {
-          if (val == null || isNaN(val)) return "N/A";
+          if (val == null || isNaN(val) || !isFinite(val)) return "N/A";
           return compareStocks && compareStocks.length > 0 ? `${val.toFixed(2)}%` : `₹${val.toFixed(2)}`;
         },
       },
@@ -356,8 +407,12 @@ export function PriceChart({ data, chartMode, compareStocks, height = 400 }: Pri
     },
   };
 
-  if (chartMode === 'candlestick' && candlestickSeries && (!compareStocks || compareStocks.length === 0)) {
-    if (candlestickSeries[0].data.length === 0) {
+  // Check if we have valid data
+  const hasValidLineData = lineChartSeries.some(series => series.data.length > 0);
+  const hasValidCandlestickData = candlestickSeries && candlestickSeries[0].data.length > 0;
+
+  if (chartMode === 'candlestick' && (!compareStocks || compareStocks.length === 0)) {
+    if (!hasValidCandlestickData) {
       return (
         <div className="flex items-center justify-center h-[400px] text-slate-400">
           <div className="text-center">
@@ -376,6 +431,18 @@ export function PriceChart({ data, chartMode, compareStocks, height = 400 }: Pri
         type="candlestick" 
         height={height} 
       />
+    );
+  }
+
+  if (!hasValidLineData) {
+    return (
+      <div className="flex items-center justify-center h-[400px] text-slate-400">
+        <div className="text-center">
+          <div className="text-6xl mb-4">📊</div>
+          <p className="text-lg">Waiting for price data...</p>
+          <p className="text-sm text-slate-500 mt-2">Charts will appear as market updates arrive</p>
+        </div>
+      </div>
     );
   }
 

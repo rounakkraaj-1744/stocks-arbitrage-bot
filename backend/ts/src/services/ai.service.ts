@@ -1,7 +1,7 @@
 import Groq from 'groq-sdk';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { AI_CONFIG, AI_PROMPTS } from '../lib/ai-config';
-import { type ArbitrageData, type ChartDataPoint, type AITradeSignal, type AIMarketAnalysis, type PortfolioOptimization } from '../lib/types';
+import { AI_CONFIG, AI_PROMPTS } from '../lib/ai-config.ts';
+import { type ArbitrageData, type ChartDataPoint, type AITradeSignal, type AIMarketAnalysis, type PortfolioOptimization } from '../lib/types.ts';
 
 const groq = new Groq({
     apiKey: AI_CONFIG.GROQ_API_KEY,

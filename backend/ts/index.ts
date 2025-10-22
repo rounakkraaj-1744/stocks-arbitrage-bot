@@ -1,8 +1,8 @@
 import express, {type NextFunction, type Request, type Response} from 'express';
 import cors from 'cors';
-import aiRoutes from './src/routes/ai.routes';
-import { errorHandler } from './src/middlewares/errorHandler';
-import { logger } from './src/utils/logger';
+import aiRoutes from './src/routes/ai.routes.ts';
+import { errorHandler } from './src/middlewares/errorHandler.ts';
+import { logger } from './src/utils/logger.ts';
 import dotenv from "dotenv"
 dotenv.config()
 
