@@ -15,10 +15,13 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "axios": "^1.12.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "groq-sdk": "^0.34.0",
+    "openai": "^6.6.0"
   },
   "scripts": {
     "dev": "nodemon index.ts"
