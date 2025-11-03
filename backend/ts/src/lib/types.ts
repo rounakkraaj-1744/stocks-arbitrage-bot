@@ -48,3 +48,11 @@ export interface PortfolioOptimization {
   reasoning: string;
   expectedReturn: number;
 }
+
+export interface PredictionResult {
+    timestamp: number;
+    predictedSpread: number;
+    confidence: number;
+    upperBound: number;
+    lowerBound: number;
+}

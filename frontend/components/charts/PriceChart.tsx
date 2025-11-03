@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from 'next/dynamic';
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import type { ApexOptions } from 'apexcharts';
 import { ChartDataPoint, ChartMode } from '@/lib/types';
 
@@ -15,14 +15,14 @@ interface PriceChartProps {
 }
 
 export function PriceChart({ data, chartMode, compareStocks, height = 400 }: PriceChartProps) {
-  // Line chart series with timestamps and validation
+  const chartRef = useRef<any>(null);
+
   const lineChartSeries = useMemo(() => {
     if (compareStocks && compareStocks.length > 0) {
       return compareStocks.map((stock) => ({
         name: `${stock.name} Spread`,
         data: stock.data
           .filter(point => {
-            // Filter out invalid data points
             return point.timestamp && 
                    typeof point.spread === 'number' && 
                    !isNaN(point.spread) &&
@@ -67,7 +67,6 @@ export function PriceChart({ data, chartMode, compareStocks, height = 400 }: Pri
     ];
   }, [data, compareStocks]);
 
-  // Candlestick series with proper data structure
   const candlestickSeries = useMemo(() => {
     if (chartMode !== 'candlestick') return null;
     
@@ -116,7 +115,7 @@ export function PriceChart({ data, chartMode, compareStocks, height = 400 }: Pri
       zoom: { 
         enabled: true,
         type: 'x',
-        autoScaleYaxis: true,
+        autoScaleYaxis: false, // ✅ Prevent auto-zoom-out
       },
       toolbar: { 
         show: true,
@@ -132,16 +131,7 @@ export function PriceChart({ data, chartMode, compareStocks, height = 400 }: Pri
       },
       background: "transparent",
       animations: {
-        enabled: true,
-        speed: 800,
-        animateGradually: {
-          enabled: true,
-          delay: 150,
-        },
-        dynamicAnimation: {
-          enabled: true,
-          speed: 350,
-        },
+        enabled: false, // ✅ Disable animations to prevent jittery zoom
       },
     },
     xaxis: {
@@ -291,7 +281,7 @@ export function PriceChart({ data, chartMode, compareStocks, height = 400 }: Pri
       zoom: { 
         enabled: true, 
         type: "x",
-        autoScaleYaxis: true,
+        autoScaleYaxis: false,
       },
       toolbar: { 
         show: true,
@@ -307,16 +297,7 @@ export function PriceChart({ data, chartMode, compareStocks, height = 400 }: Pri
       },
       background: "transparent",
       animations: {
-        enabled: true,
-        speed: 800,
-        animateGradually: {
-          enabled: true,
-          delay: 150,
-        },
-        dynamicAnimation: {
-          enabled: true,
-          speed: 350,
-        },
+        enabled: false,
       },
     },
     stroke: { 
@@ -407,7 +388,6 @@ export function PriceChart({ data, chartMode, compareStocks, height = 400 }: Pri
     },
   };
 
-  // Check if we have valid data
   const hasValidLineData = lineChartSeries.some(series => series.data.length > 0);
   const hasValidCandlestickData = candlestickSeries && candlestickSeries[0].data.length > 0;
 
@@ -447,7 +427,7 @@ export function PriceChart({ data, chartMode, compareStocks, height = 400 }: Pri
   }
 
   return (
-    <ApexCharts 
+    <ApexCharts
       options={lineChartOptions} 
       series={lineChartSeries} 
       type="line" 

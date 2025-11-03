@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArbitrageData } from '@/lib/types';
 import { chatWithAI } from '@/lib/ai-client';
+import ReactMarkdown from 'react-markdown';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -14,9 +14,10 @@ interface Message {
 interface AIChatAssistantProps {
   currentData: { [key: string]: ArbitrageData };
   selectedStock?: string;
+  onClose: () => void; // Add onClose prop
 }
 
-export function AIChatAssistant({ currentData, selectedStock }: AIChatAssistantProps) {
+export function AIChatAssistant({ currentData, selectedStock, onClose }: AIChatAssistantProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -27,6 +28,7 @@ export function AIChatAssistant({ currentData, selectedStock }: AIChatAssistantP
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -35,6 +37,34 @@ export function AIChatAssistant({ currentData, selectedStock }: AIChatAssistantP
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Click outside to close
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (chatContainerRef.current && !chatContainerRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [onClose]);
+
+  // Escape key to close
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [onClose]);
 
   const handleSend = async () => {
     if (!input.trim() || loading) return;
@@ -79,69 +109,120 @@ export function AIChatAssistant({ currentData, selectedStock }: AIChatAssistantP
   };
 
   return (
-    <Card className="bg-slate-900/50 border-slate-800 h-[600px] flex flex-col">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-white text-lg flex items-center gap-2">
-          <span>💬</span>
-          AI Trading Assistant
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex-1 flex flex-col gap-3 p-4">
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto space-y-3 pr-2">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end justify-end p-4">
+      <div
+        ref={chatContainerRef}
+        className="flex flex-col bg-slate-900/95 backdrop-blur-xl border border-slate-700 rounded-2xl shadow-2xl h-[600px] w-full max-w-md overflow-hidden animate-slide-in"
+      >
+        
+        {/* Header */}
+        <div className="flex items-center justify-between bg-gradient-to-r from-purple-600/20 to-pink-600/20 border-b border-slate-700 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50" />
+            <span className="font-semibold text-white text-base">💬 AI Trading Assistant</span>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-slate-400 hover:text-white transition-colors p-1 hover:bg-slate-700 rounded-lg"
+            title="Close (ESC)"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Messages Container */}
+        <div className="flex-1 px-4 py-3 space-y-3 overflow-y-auto" style={{ minHeight: 0 }}>
           {messages.map((msg, idx) => (
             <div
               key={idx}
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}
             >
               <div
-                className={`max-w-[80%] p-3 rounded-lg ${
+                className={`rounded-xl px-4 py-3 max-w-[85%] break-words shadow-lg ${
                   msg.role === 'user'
                     ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
-                    : 'bg-slate-800 text-slate-200'
+                    : 'bg-slate-800 text-slate-100 border border-slate-700'
                 }`}
               >
-                <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                <p className="text-xs opacity-60 mt-1">
+                <div className="prose prose-sm prose-invert max-w-none prose-p:my-1 prose-ul:my-2 prose-li:my-0.5 prose-headings:my-2 prose-code:text-pink-400 prose-code:bg-slate-900/50 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-strong:text-white prose-strong:font-semibold prose-a:text-blue-400 prose-a:underline">
+                  <ReactMarkdown
+                    components={{
+                      a: ({ node, ...props }) => (
+                        <a {...props} target="_blank" rel="noopener noreferrer" />
+                      ),
+                    }}
+                  >
+                    {msg.content}
+                  </ReactMarkdown>
+                </div>
+                <div className="text-[10px] opacity-60 mt-2 text-right">
                   {new Date(msg.timestamp).toLocaleTimeString()}
-                </p>
+                </div>
               </div>
             </div>
           ))}
+          
           {loading && (
             <div className="flex justify-start">
-              <div className="bg-slate-800 text-slate-200 p-3 rounded-lg">
+              <div className="px-4 py-3 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 shadow-lg">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"></div>
                   <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                   <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                  <span className="text-sm ml-2">Thinking...</span>
                 </div>
               </div>
             </div>
           )}
+          
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input */}
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Ask me anything..."
-            disabled={loading}
-            className="flex-1 px-4 py-3 bg-slate-800 text-white rounded-lg border border-slate-600 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all disabled:opacity-50"
-          />
-          <button
-            onClick={handleSend}
-            disabled={loading || !input.trim()}
-            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        {/* Input Area - Fixed at Bottom */}
+        <div className="border-t border-slate-700 bg-slate-900 px-4 py-3">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSend();
+            }}
+            className="flex items-center gap-2"
           >
-            Send
-          </button>
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyPress}
+              placeholder="Ask me anything..."
+              disabled={loading}
+              className="flex-1 px-4 py-3 rounded-xl border border-slate-600 bg-slate-800 text-white placeholder-slate-400 outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              autoFocus
+              maxLength={500}
+            />
+            <button
+              type="submit"
+              disabled={loading || !input.trim()}
+              className="btn-premium font-semibold px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-purple-500/50"
+            >
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Wait
+                </span>
+              ) : (
+                'Send'
+              )}
+            </button>
+          </form>
+          <div className="text-[10px] text-slate-500 mt-2 text-center">
+            Powered by Gemini AI • {messages.length} messages • Press ESC to close
+          </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

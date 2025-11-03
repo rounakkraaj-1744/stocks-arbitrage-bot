@@ -37,16 +37,10 @@ fn generate_futures_price_from_spot(spot: f64) -> f64 {
 }
 
 pub fn create_nse_client() -> Client {
-    Client::builder()
-        .timeout(Duration::from_secs(15)) // Increased timeout
-        .build()
-        .unwrap()
+    Client::builder().timeout(Duration::from_secs(15)).build().unwrap()
 }
 
-pub async fn fetch_nse_spot_price(
-    client: &Client,
-    symbol: &str,
-) -> Result<StockPrice, Box<dyn std::error::Error + Send + Sync>> {
+pub async fn fetch_nse_spot_price( client: &Client, symbol: &str ) -> Result<StockPrice, Box<dyn std::error::Error + Send + Sync>> {
     
     let yahoo_symbol = get_yahoo_symbol(symbol);
     
@@ -57,12 +51,7 @@ pub async fn fetch_nse_spot_price(
     
     info!("Fetching Yahoo Finance URL: {}", url);
     
-    let resp = client
-        .get(&url)
-        .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-        .send()
-        .await
-        .map_err(|e| {
+    let resp = client.get(&url).header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36").send().await.map_err(|e| {
             error!("Network error for {}: {:?}", symbol, e);
             e
         })?;
@@ -80,19 +69,14 @@ pub async fn fetch_nse_spot_price(
         return Err("Empty response from Yahoo Finance".into());
     }
     
-    let parsed: Value = serde_json::from_str(&text)
-        .map_err(|e| {
+    let parsed: Value = serde_json::from_str(&text).map_err(|e| {
             error!("JSON parse error for {}: {:?}", symbol, e);
             error!("Response text: {}", &text[..text.len().min(200)]);
             e
         })?;
     
     // Try multiple fields to get the price
-    let ltp = parsed["chart"]["result"][0]["meta"]["regularMarketPrice"]
-        .as_f64()
-        .or_else(|| parsed["chart"]["result"][0]["meta"]["previousClose"].as_f64())
-        .or_else(|| parsed["chart"]["result"][0]["meta"]["chartPreviousClose"].as_f64())
-        .ok_or_else(|| {
+    let ltp = parsed["chart"]["result"][0]["meta"]["regularMarketPrice"].as_f64().or_else(|| parsed["chart"]["result"][0]["meta"]["previousClose"].as_f64()).or_else(|| parsed["chart"]["result"][0]["meta"]["chartPreviousClose"].as_f64()).ok_or_else(|| {
             error!("No price found in Yahoo response for {}", symbol);
             error!("Available fields: {:?}", parsed["chart"]["result"][0]["meta"]);
             "Yahoo Finance price missing"
@@ -107,12 +91,7 @@ pub async fn fetch_nse_spot_price(
     })
 }
 
-pub async fn fetch_nse_futures_price(
-    client: &Client,
-    symbol: &str,
-    expiry: &str,
-) -> Result<FuturesPrice, Box<dyn std::error::Error + Send + Sync>> {
-    
+pub async fn fetch_nse_futures_price( client: &Client, symbol: &str, expiry: &str ) -> Result<FuturesPrice, Box<dyn std::error::Error + Send + Sync>> {
     let spot = fetch_nse_spot_price(client, symbol).await?;
     let futures_ltp = generate_futures_price_from_spot(spot.ltp);
     

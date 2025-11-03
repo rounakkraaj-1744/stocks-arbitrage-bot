@@ -63,10 +63,7 @@ pub fn calculate_profit_metrics(
 
 /// Calculate net profit after transaction costs (Future use)
 #[allow(dead_code)]
-pub fn calculate_net_profit(
-    gross_profit: f64,
-    contract_value: f64,
-) -> f64 {
+pub fn calculate_net_profit( gross_profit: f64, contract_value: f64 ) -> f64 {
     // Typical costs:
     // - Brokerage: ~0.03% or ₹20 per order (whichever is lower)
     // - STT: 0.025% on futures sell side

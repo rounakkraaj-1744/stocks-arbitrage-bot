@@ -7,12 +7,12 @@ import { useLocalStorage, loadFromLocalStorage } from '@/hooks/useLocalStorage';
 import { ALL_STOCKS, STORAGE_KEYS } from '@/lib/constants';
 import { aggregateData } from '@/lib/utils';
 import { Timeframe, ChartMode, Alert, BacktestResult } from '@/lib/types';
-import {Header} from '@/components/Header';
+import { Header } from '@/components/Header';
 import { Summary } from '@/components/Summary';
 import { Controls } from '@/components/Controls';
 import { StockSelector } from '@/components/StockSelector';
 import { StockDetails } from '@/components/StockDetails';
-import { StocksTable } from '@/components/StocksTable'
+import { StocksTable } from '@/components/StocksTable';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PriceChart } from '@/components/charts/PriceChart';
 import { AlertModal } from '@/components/modals/AlertModal';
@@ -21,6 +21,8 @@ import { PositionSimulator } from '@/components/modals/PositionSimulator';
 import { SpreadChart } from '@/components/charts/SpreadChart';
 import { AITradeAssistant } from '@/components/ai/AITradeAssistant';
 import { AIChatAssistant } from '@/components/ai/AIChatAssistant';
+import { AIPortfolioOptimizer } from '@/components/ai/AIPortfolioOptimizer';
+import { PredictionModal } from '@/components/modals/PredictionModal';
 
 export default function Home() {
   const { status, currentData, chartData, setChartData, setCurrentData } = useWebSocket();
@@ -48,18 +50,17 @@ export default function Home() {
   const [showPositionSimulator, setShowPositionSimulator] = useState(false);
   const [showBacktest, setShowBacktest] = useState(false);
   const [backtestResult, setBacktestResult] = useState<BacktestResult | null>(null);
-
   const [showAIAssistant, setShowAIAssistant] = useState(false);
   const [showAIChat, setShowAIChat] = useState(false);
+  const [showPortfolioOptimizer, setShowPortfolioOptimizer] = useState(false);
+  const [showPredictionModal, setShowPredictionModal] = useState(false);
 
-  // Persist to localStorage
   useLocalStorage(STORAGE_KEYS.SELECTED_STOCK, selectedStock);
   useLocalStorage(STORAGE_KEYS.TIMEFRAME, timeframe);
   useLocalStorage(STORAGE_KEYS.CHART_MODE, chartMode);
   useLocalStorage(STORAGE_KEYS.COMPARE_STOCKS, compareStocks);
   useLocalStorage(STORAGE_KEYS.ALERTS, alerts);
 
-  // Load initial data from localStorage
   useEffect(() => {
     const savedChartData = loadFromLocalStorage(STORAGE_KEYS.CHART_DATA, {});
     const savedCurrentData = loadFromLocalStorage(STORAGE_KEYS.CURRENT_DATA, {});
@@ -89,11 +90,23 @@ export default function Home() {
     }));
   }, [compareStocks, chartData, timeframe]);
 
+  const opportunities = useMemo(() =>
+    Object.values(currentData).filter(d => d.opportunity),
+    [currentData]
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-4 md:p-8">
-      <Toaster position="top-right" />
+      <Toaster position="top-right" toastOptions={{
+        style: {
+          background: 'rgb(30 41 59)',
+          color: '#fff',
+          border: '1px solid rgb(51 65 85)',
+        },
+      }} />
 
-      <div className="max-w-[1920px] mx-auto">
+      <div className="max-w-[1920px] mx-auto space-y-6">
+        {/* Header */}
         <Header
           status={status}
           selectedData={selectedData}
@@ -108,14 +121,17 @@ export default function Home() {
           onClearData={() => {
             setChartData({});
             setCurrentData({});
-          } }
+          }}
           onShowAIAssistant={() => setShowAIAssistant(true)}
-          onShowAIChat={() => setShowAIChat(true)} onShowPortfolioOptimizer={function (): void {
-            throw new Error('Function not implemented.');
-          } }/>
+          onShowAIChat={() => setShowAIChat(true)}
+          onShowPortfolioOptimizer={() => setShowPortfolioOptimizer(true)}
+          onShowPrediction={() => setShowPredictionModal(true)}
+        />
 
+        {/* Summary */}
         <Summary currentData={currentData} receivedStocks={receivedStocks} />
 
+        {/* Controls */}
         <Controls
           timeframe={timeframe}
           setTimeframe={setTimeframe}
@@ -127,6 +143,7 @@ export default function Home() {
           setCompareStocks={setCompareStocks}
         />
 
+        {/* Stock Selector */}
         <StockSelector
           stocks={filteredStocks}
           selectedStock={selectedStock}
@@ -144,6 +161,7 @@ export default function Home() {
           }}
         />
 
+        {/* Stock Details */}
         {selectedData && compareStocks.length === 0 && (
           <StockDetails
             data={selectedData}
@@ -151,38 +169,51 @@ export default function Home() {
           />
         )}
 
+        {/* Charts Section */}
         {selectedChartData.length > 0 && (
-          <div className="space-y-6 mb-8">
-            <Card className="bg-slate-900/50 border-slate-800">
-              <CardHeader>
-                <CardTitle className="text-orange-400 text-lg flex items-center justify-between">
-                  <span className="flex items-center gap-2">
-                    <span>📈</span>
-                    {compareStocks.length > 0
-                      ? `Compare Spreads - ${compareStocks.join(', ')} (${timeframe})`
-                      : `${selectedStock} - ${chartMode === 'candlestick' ? 'Candlestick' : 'Price'} (${timeframe})`
-                    }
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-slate-500">{selectedChartData.length} pts</span>
+          <div className="grid grid-cols-1 gap-6">
+
+            {/* Price Chart */}
+            <Card className="bg-gradient-to-br from-slate-900/90 to-slate-900/70 backdrop-blur-xl border border-slate-800/50 shadow-2xl hover:shadow-orange-500/10 transition-shadow duration-300">
+              <CardHeader className="border-b border-slate-800/50 bg-slate-900/50">
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500/20 to-red-500/20 border border-orange-500/30 flex items-center justify-center">
+                      <span className="text-xl">📈</span>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-white">
+                        {compareStocks.length > 0
+                          ? `Comparison View`
+                          : `${selectedStock} Price Action`
+                        }
+                      </h3>
+                      <p className="text-xs text-slate-400 font-normal">
+                        {compareStocks.length > 0
+                          ? compareStocks.join(', ')
+                          : chartMode === 'candlestick' ? 'OHLC Candlestick Chart' : 'Spot vs Futures Price'
+                        } • {timeframe} timeframe
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="px-3 py-1 bg-slate-800/50 border border-slate-700/50 rounded-lg">
+                      <span className="text-xs text-slate-400">{selectedChartData.length}</span>
+                      <span className="text-xs text-slate-500 ml-1">points</span>
+                    </div>
                     <button
                       onClick={() => setFullscreenChart("price")}
-                      className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded text-xs font-medium transition-colors flex items-center gap-1"
+                      className="group px-3 py-2 bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700/50 hover:border-slate-600 rounded-lg transition-all duration-200 flex items-center gap-2"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
-                        />
+                      <svg className="w-4 h-4 text-slate-400 group-hover:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
                       </svg>
-                      Fullscreen
+                      <span className="text-xs font-medium text-slate-400 group-hover:text-slate-300">Fullscreen</span>
                     </button>
                   </div>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-6">
                 <PriceChart
                   data={selectedChartData}
                   chartMode={chartMode}
@@ -191,34 +222,42 @@ export default function Home() {
               </CardContent>
             </Card>
 
+            {/* Spread Chart */}
             {compareStocks.length === 0 && (
-              <Card className="bg-slate-900/50 border-slate-800">
-                <CardHeader>
-                  <CardTitle className="text-green-400 text-lg flex items-center justify-between">
-                    <span className="flex items-center gap-2">
-                      <span>📊</span>
-                      {selectedStock} - Spread Percentage ({timeframe})
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-slate-500">{selectedChartData.length} pts</span>
+              <Card className="bg-gradient-to-br from-slate-900/90 to-slate-900/70 backdrop-blur-xl border border-slate-800/50 shadow-2xl hover:shadow-green-500/10 transition-shadow duration-300">
+                <CardHeader className="border-b border-slate-800/50 bg-slate-900/50">
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30 flex items-center justify-center">
+                        <span className="text-xl">📊</span>
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-white">
+                          {selectedStock} Arbitrage Spread
+                        </h3>
+                        <p className="text-xs text-slate-400 font-normal">
+                          Cash-Futures spread percentage • {timeframe} timeframe
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="px-3 py-1 bg-slate-800/50 border border-slate-700/50 rounded-lg">
+                        <span className="text-xs text-slate-400">{selectedChartData.length}</span>
+                        <span className="text-xs text-slate-500 ml-1">points</span>
+                      </div>
                       <button
                         onClick={() => setFullscreenChart("spread")}
-                        className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded text-xs font-medium transition-colors flex items-center gap-1"
+                        className="group px-3 py-2 bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700/50 hover:border-slate-600 rounded-lg transition-all duration-200 flex items-center gap-2"
                       >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
-                          />
+                        <svg className="w-4 h-4 text-slate-400 group-hover:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
                         </svg>
-                        Fullscreen
+                        <span className="text-xs font-medium text-slate-400 group-hover:text-slate-300">Fullscreen</span>
                       </button>
                     </div>
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-6">
                   <SpreadChart data={selectedChartData} threshold={threshold} />
                 </CardContent>
               </Card>
@@ -226,6 +265,7 @@ export default function Home() {
           </div>
         )}
 
+        {/* Stocks Table */}
         <StocksTable
           stocks={ALL_STOCKS}
           currentData={currentData}
@@ -233,54 +273,61 @@ export default function Home() {
         />
       </div>
 
-      {/* Fullscreen Modal */}
+      {/* Fullscreen Chart Modal */}
       {fullscreenChart && (
         <div
-          className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+          className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4 backdrop-blur-xl"
           onClick={() => setFullscreenChart(null)}
         >
-          <div className="w-full max-w-7xl h-full flex flex-col" onClick={(e) => e.stopPropagation()}>
-            <div className="bg-slate-900 rounded-lg p-6 border border-slate-700 flex-1 flex flex-col">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-2xl font-bold text-white flex items-center gap-2">
-                  {fullscreenChart === "price" ? (
-                    <>
-                      <span>📈</span>
-                      {compareStocks.length > 0
-                        ? `Compare Spreads - ${compareStocks.join(', ')}`
-                        : `${selectedStock} - ${chartMode === 'candlestick' ? 'Candlestick' : 'Price'}`
-                      } ({timeframe})
-                    </>
-                  ) : (
-                    <>
-                      <span>📊</span>
-                      {selectedStock} - Spread Percentage ({timeframe})
-                    </>
-                  )}
-                </h3>
+          <div className="w-full max-w-[95vw] h-[95vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-gradient-to-br from-slate-900 to-slate-900/90 rounded-2xl border border-slate-700/50 flex-1 flex flex-col overflow-hidden shadow-2xl">
+
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-6 border-b border-slate-800/50 bg-slate-900/80 backdrop-blur-xl">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500/20 to-red-500/20 border border-orange-500/30 flex items-center justify-center">
+                    <span className="text-2xl">{fullscreenChart === "price" ? "📈" : "📊"}</span>
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-white">
+                      {fullscreenChart === "price" ? (
+                        compareStocks.length > 0
+                          ? `Compare: ${compareStocks.join(', ')}`
+                          : `${selectedStock} - ${chartMode === 'candlestick' ? 'Candlestick' : 'Price Chart'}`
+                      ) : (
+                        `${selectedStock} - Spread Analysis`
+                      )}
+                    </h3>
+                    <p className="text-sm text-slate-400">
+                      {timeframe} timeframe • {selectedChartData.length} data points
+                    </p>
+                  </div>
+                </div>
                 <button
                   onClick={() => setFullscreenChart(null)}
-                  className="px-4 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg transition-colors flex items-center gap-2"
+                  className="group px-5 py-2.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-500/50 text-red-400 rounded-xl transition-all duration-200 flex items-center gap-2"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
-                  Close
+                  <span className="font-medium">Close</span>
                 </button>
               </div>
-              <div className="flex-1">
+
+              {/* Chart Content */}
+              <div className="flex-1 p-6 overflow-auto">
                 {fullscreenChart === "price" ? (
                   <PriceChart
                     data={selectedChartData}
                     chartMode={chartMode}
                     compareStocks={compareChartData || undefined}
-                    height={600}
+                    height={700}
                   />
                 ) : (
                   <SpreadChart
                     data={selectedChartData}
                     threshold={threshold}
-                    height={600}
+                    height={700}
                   />
                 )}
               </div>
@@ -318,8 +365,10 @@ export default function Home() {
       )}
 
       {showAIAssistant && selectedData && (
-        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto"
-          onClick={() => setShowAIAssistant(false)}>
+        <div
+          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 backdrop-blur-xl overflow-y-auto"
+          onClick={() => setShowAIAssistant(false)}
+        >
           <div className="w-full max-w-3xl" onClick={(e) => e.stopPropagation()}>
             <AITradeAssistant
               stock={selectedData}
@@ -327,27 +376,35 @@ export default function Home() {
             />
             <button
               onClick={() => setShowAIAssistant(false)}
-              className="mt-4 w-full px-4 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg transition-colors"
+              className="mt-4 w-full px-4 py-3 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-500/50 text-red-400 rounded-xl transition-all font-medium"
             >
-              Close
+              Close AI Assistant
             </button>
           </div>
         </div>
       )}
 
       {showAIChat && (
-        <div className="fixed bottom-4 right-4 w-96 z-50 shadow-2xl">
-          <AIChatAssistant
-            currentData={currentData}
-            selectedStock={selectedStock}
-          />
-          <button
-            onClick={() => setShowAIChat(false)}
-            className="absolute top-2 right-2 px-2 py-1 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded text-xs"
-          >
-            ✕
-          </button>
-        </div>
+        <AIChatAssistant
+          currentData={currentData}
+          selectedStock={selectedStock}
+          onClose={() => setShowAIChat(false)}
+        />
+      )}
+
+      {showPortfolioOptimizer && (
+        <AIPortfolioOptimizer
+          opportunities={opportunities}
+          onClose={() => setShowPortfolioOptimizer(false)}
+        />
+      )}
+
+      {showPredictionModal && selectedData && (
+        <PredictionModal
+          stock={selectedData}
+          historicalData={selectedChartData}
+          onClose={() => setShowPredictionModal(false)}
+        />
       )}
     </div>
   );

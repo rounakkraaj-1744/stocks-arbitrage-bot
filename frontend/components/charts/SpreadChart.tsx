@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from 'next/dynamic';
+import { useRef } from 'react';
 import type { ApexOptions } from 'apexcharts';
 import { ChartDataPoint } from '@/lib/types';
 
@@ -13,6 +14,7 @@ interface SpreadChartProps {
 }
 
 export function SpreadChart({ data, threshold, height = 400 }: SpreadChartProps) {
+  const chartRef = useRef<any>(null);
   const categories = data.map((point) => point.time);
   
   const series = [{
@@ -23,9 +25,16 @@ export function SpreadChart({ data, threshold, height = 400 }: SpreadChartProps)
   const options: ApexOptions = {
     chart: {
       type: "area",
-      zoom: { enabled: true, type: "x" },
+      zoom: { 
+        enabled: true, 
+        type: "x",
+        autoScaleYaxis: false, // ✅ Prevent auto-zoom-out
+      },
       toolbar: { show: true },
       background: "transparent",
+      animations: {
+        enabled: false, // ✅ Disable animations
+      },
     },
     stroke: { width: 2, curve: "smooth" },
     colors: ["#fb923c"],
@@ -110,5 +119,12 @@ export function SpreadChart({ data, threshold, height = 400 }: SpreadChartProps)
     },
   };
 
-  return <ApexCharts options={options} series={series} type="area" height={height} />;
+  return (
+    <ApexCharts
+      options={options} 
+      series={series} 
+      type="area" 
+      height={height} 
+    />
+  );
 }

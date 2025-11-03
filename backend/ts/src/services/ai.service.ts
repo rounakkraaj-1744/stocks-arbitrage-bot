@@ -3,46 +3,38 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { AI_CONFIG, AI_PROMPTS } from '../lib/ai-config.ts';
 import { type ArbitrageData, type ChartDataPoint, type AITradeSignal, type AIMarketAnalysis, type PortfolioOptimization } from '../lib/types.ts';
 
-const groq = new Groq({
-    apiKey: AI_CONFIG.GROQ_API_KEY,
-});
+const groq = new Groq({ apiKey: AI_CONFIG.GROQ_API_KEY });
 
 const genAI = new GoogleGenerativeAI(AI_CONFIG.GEMINI_API_KEY);
 
 export class AIService {
-    static async generateTradeSignal(
-        stock: ArbitrageData,
-        historicalData: ChartDataPoint[]
-    ): Promise<AITradeSignal> {
+    static async generateTradeSignal( stock: ArbitrageData, historicalData: ChartDataPoint[] ): Promise<AITradeSignal> {
         try {
             const recentData = historicalData.slice(-10);
             const avgSpread = recentData.reduce((sum, d) => sum + d.spread, 0) / recentData.length;
-            const spreadTrend = recentData.length > 1
-                ? recentData[recentData.length - 1]!.spread - recentData[0]!.spread
-                : 0;
+            const spreadTrend = recentData.length > 1 ? recentData[recentData.length - 1]!.spread - recentData[0]!.spread : 0;
 
             const prompt = `${AI_PROMPTS.TRADE_SIGNAL}
+                            Stock Data:
+                            Symbol: ${stock.symbol}
+                            Current Spot Price: ₹${stock.spot_price}
+                            Current Futures Price: ₹${stock.futures_price}
+                            Spread: ${stock.spread_percentage}%
+                            Spread Trend: ${stock.spread_trend}
+                            Average Spread (10 periods): ${avgSpread.toFixed(2)}%
+                            Spread Change: ${spreadTrend.toFixed(2)}%
+                            Lot Size: ${stock.lot_size}
+                            Estimated Profit: ₹${stock.gross_profit}
+                            ROI: ${stock.roi_percentage}%
 
-Stock Data:
-Symbol: ${stock.symbol}
-Current Spot Price: ₹${stock.spot_price}
-Current Futures Price: ₹${stock.futures_price}
-Spread: ${stock.spread_percentage}%
-Spread Trend: ${stock.spread_trend}
-Average Spread (10 periods): ${avgSpread.toFixed(2)}%
-Spread Change: ${spreadTrend.toFixed(2)}%
-Lot Size: ${stock.lot_size}
-Estimated Profit: ₹${stock.gross_profit}
-ROI: ${stock.roi_percentage}%
-
-Respond ONLY with valid JSON in this exact format:
-{
-  "action": "BUY" | "SELL" | "HOLD",
-  "confidence": 85,
-  "reasoning": ["reason 1", "reason 2", "reason 3"],
-  "riskLevel": "LOW" | "MEDIUM" | "HIGH",
-  "targetProfit": 1500.50
-}`;
+                            Respond ONLY with valid JSON in this exact format:
+                            {
+                            "action": "BUY" | "SELL" | "HOLD",
+                            "confidence": 85,
+                            "reasoning": ["reason 1", "reason 2", "reason 3"],
+                            "riskLevel": "LOW" | "MEDIUM" | "HIGH",
+                            "targetProfit": 1500.50
+                            }`;
 
             const completion = await groq.chat.completions.create({
                 messages: [
@@ -75,32 +67,27 @@ Respond ONLY with valid JSON in this exact format:
                 ...parsed,
                 timestamp: Date.now(),
             };
-        } catch (error) {
+        }
+        catch (error) {
             console.error('AI Trade Signal Error:', error);
             throw new Error('Failed to generate AI trade signal');
         }
     }
 
-    static async analyzeMarket(
-        stock: ArbitrageData,
-        historicalData: ChartDataPoint[]
-    ): Promise<AIMarketAnalysis> {
+    static async analyzeMarket( stock: ArbitrageData, historicalData: ChartDataPoint[] ): Promise<AIMarketAnalysis> {
         try {
             const model = genAI.getGenerativeModel({ model: AI_CONFIG.MODEL_GEMINI });
 
             const prompt = `${AI_PROMPTS.MARKET_ANALYSIS}
-
-Stock: ${stock.symbol}
-Spread: ${stock.spread_percentage}%
-Trend: ${stock.spread_trend}
-Action: ${stock.action}`;
+                            Stock: ${stock.symbol}
+                            Spread: ${stock.spread_percentage}%
+                            Trend: ${stock.spread_trend}
+                            Action: ${stock.action}`;
 
             const result = await model.generateContent(prompt);
             const text = result.response.text();
 
-            const sentiment = text.toLowerCase().includes('bullish') ? 'BULLISH'
-                : text.toLowerCase().includes('bearish') ? 'BEARISH'
-                    : 'NEUTRAL';
+            const sentiment = text.toLowerCase().includes('bullish') ? 'BULLISH' : text.toLowerCase().includes('bearish') ? 'BEARISH' : 'NEUTRAL';
 
             return {
                 summary: text,
@@ -108,51 +95,39 @@ Action: ${stock.action}`;
                 keyFactors: text.split('.').filter(s => s.trim().length > 0).slice(0, 3),
                 timestamp: Date.now(),
             };
-        } catch (error) {
+        }
+        catch (error) {
             console.error('AI Market Analysis Error:', error);
             throw new Error('Failed to analyze market');
         }
     }
 
-    static async chatWithAI(
-        userMessage: string,
-        context: {
-            currentData: { [key: string]: ArbitrageData };
-            selectedStock?: string;
-        }
-    ): Promise<string> {
+    static async chatWithAI( userMessage: string, context: { currentData: { [key: string]: ArbitrageData }; selectedStock?: string; }): Promise<string> {
         try {
             const model = genAI.getGenerativeModel({ model: AI_CONFIG.MODEL_GEMINI });
 
-            const contextInfo = context.selectedStock && context.currentData[context.selectedStock]
-                ? `Current viewing: ${context.selectedStock}
-Spread: ${context.currentData[context.selectedStock]?.spread_percentage}%
-Price: ₹${context.currentData[context.selectedStock]?.spot_price}`
-                : 'No stock selected';
+            const contextInfo = context.selectedStock && context.currentData[context.selectedStock] ? `Current viewing: ${context.selectedStock} Spread: ${context.currentData[context.selectedStock]?.spread_percentage}% Price: ₹${context.currentData[context.selectedStock]?.spot_price}` : 'No stock selected';
 
             const prompt = `You are an expert arbitrage trading assistant. Help the user with their query.
 
-Context:
-${contextInfo}
+                            Context: ${contextInfo}
 
-Active opportunities: ${Object.values(context.currentData).filter(d => d.opportunity).length}
+                            Active opportunities: ${Object.values(context.currentData).filter(d => d.opportunity).length}
 
-User question: ${userMessage}
+                            User question: ${userMessage}
 
-Provide a helpful, concise response (max 150 words).`;
+                            Provide a helpful, concise response (max 150 words).`;
 
             const result = await model.generateContent(prompt);
             return result.response.text();
-        } catch (error) {
+        }
+        catch (error) {
             console.error('AI Chat Error:', error);
             throw new Error('Failed to process chat');
         }
     }
 
-    static async optimizePortfolio(
-        opportunities: ArbitrageData[],
-        totalCapital: number
-    ): Promise<PortfolioOptimization> {
+    static async optimizePortfolio( opportunities: ArbitrageData[], totalCapital: number ): Promise<PortfolioOptimization> {
         try {
             const completion = await groq.chat.completions.create({
                 messages: [
@@ -164,16 +139,16 @@ Provide a helpful, concise response (max 150 words).`;
                         role: 'user',
                         content: `${AI_PROMPTS.PORTFOLIO_ADVICE}
 
-Available Capital: ₹${totalCapital}
-Opportunities:
-${opportunities.map(o => `${o.symbol}: Spread ${o.spread_percentage}%, ROI ${o.roi_percentage}%, Risk: ${o.spread_trend}`).join('\n')}
+                        Available Capital: ₹${totalCapital}
+                        Opportunities:
+                        ${opportunities.map(o => `${o.symbol}: Spread ${o.spread_percentage}%, ROI ${o.roi_percentage}%, Risk: ${o.spread_trend}`).join('\n')}
 
-Respond with JSON:
-{
-  "allocations": [{"symbol": "TCS", "percentage": 30}],
-  "reasoning": "explanation",
-  "expectedReturn": 5.5
-}`,
+                        Respond with JSON:
+                        {
+                        "allocations": [{"symbol": "TCS", "percentage": 30}],
+                        "reasoning": "explanation",
+                        "expectedReturn": 5.5
+                        }`,
                     },
                 ],
                 model: AI_CONFIG.MODEL_GROQ,
@@ -200,7 +175,8 @@ Respond with JSON:
                 reasoning: parsed.reasoning,
                 expectedReturn: parsed.expectedReturn,
             };
-        } catch (error) {
+        }
+        catch (error) {
             console.error('Portfolio Optimization Error:', error);
             throw new Error('Failed to optimize portfolio');
         }

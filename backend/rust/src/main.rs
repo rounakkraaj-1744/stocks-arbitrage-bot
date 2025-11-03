@@ -45,7 +45,8 @@ async fn main() {
     
     if hour < 9 || (hour == 9 && minute < 15) || hour > 15 || (hour == 15 && minute > 30) {
         info!("Market is closed. Using last traded prices from Yahoo Finance (15-min delayed).");
-    } else {
+    }
+    else {
         info!("Market is open. Fetching Yahoo Finance data (15-min delayed).");
     }
 
@@ -73,20 +74,18 @@ async fn main() {
                         let json = serde_json::to_string(&result).unwrap();
                         let _ = tx_clone.send(json);
                         info!("✓ Successfully fetched {} (Spread: {:.2}%)", symbol, result.spread_percentage);
-                        *retries = 0; // Reset retry count on success
+                        *retries = 0;
                     }
                     Err(e) => {
                         *retries += 1;
                         error!("✗ Failed to fetch {} (attempt {}): {:?}", symbol, retries, e);
                         
-                        // Skip this stock if it fails too many times
                         if *retries > 3 {
                             warn!("Skipping {} after {} failed attempts", symbol, retries);
                         }
                     }
                 }
                 
-                // Shorter delay between stocks
                 sleep(Duration::from_millis(800)).await;
             }
             
@@ -96,26 +95,18 @@ async fn main() {
     });
 
     let tx_filter = warp::any().map(move || tx.clone());
-    let ws_route = warp::path("ws")
-        .and(warp::ws())
-        .and(tx_filter)
-        .map(|ws: warp::ws::Ws, tx: broadcast::Sender<String>| {
-            ws.on_upgrade(move |socket| handle_ws_connection(socket, tx))
+    let ws_route = warp::path("ws").and(warp::ws()).and(tx_filter).map(|ws: warp::ws::Ws, tx: broadcast::Sender<String>| {
+                    ws.on_upgrade(move |socket| handle_ws_connection(socket, tx))
         });
 
-    let arbitrage_route = warp::path("arbitrage")
-        .and(warp::path::param::<String>())
-        .and(warp::get())
-        .and_then(handle_arbitrage_check);
+    let arbitrage_route = warp::path("arbitrage").and(warp::path::param::<String>()).and(warp::get()).and_then(handle_arbitrage_check);
 
     let routes = ws_route.or(arbitrage_route);
 
     info!("Server running on http://127.0.0.1:3030");
     info!("WebSocket endpoint: ws://127.0.0.1:3030/ws");
     
-    warp::serve(routes)
-        .run(([127, 0, 0, 1], 3030))
-        .await;
+    warp::serve(routes).run(([127, 0, 0, 1], 3030)).await;
 }
 
 async fn handle_ws_connection(ws: WebSocket, tx: broadcast::Sender<String>) {
@@ -154,12 +145,7 @@ async fn handle_arbitrage_check(symbol: String) -> Result<impl warp::Reply, Infa
     }
 }
 
-async fn check_arbitrage(
-    client: &reqwest::Client,
-    symbol: &str,
-    expiry: &str,
-    spread_history: &SpreadHistory,
-) -> Result<ArbitrageResult, Box<dyn std::error::Error + Send + Sync>> {
+async fn check_arbitrage( client: &reqwest::Client, symbol: &str, expiry: &str, spread_history: &SpreadHistory ) -> Result<ArbitrageResult, Box<dyn std::error::Error + Send + Sync>> {
     info!("Fetching data for {}...", symbol);
     
     let spot = fetch_nse_spot_price(client, symbol).await?;

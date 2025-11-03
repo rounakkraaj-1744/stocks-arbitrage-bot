@@ -58,5 +58,52 @@ export interface BacktestResult {
   trades: Trade[];
 }
 
+export interface PredictionResult {
+  timestamp: number;
+  predictedSpread: number;
+  confidence: number;
+  upperBound: number;
+  lowerBound: number;
+}
+
+export interface BacktestMetrics {
+  totalTrades: number;
+  winningTrades: number;
+  losingTrades: number;
+  winRate: number;
+  totalProfit: number;
+  totalLoss: number;
+  netProfit: number;
+  profitFactor: number;
+  sharpeRatio: number;
+  maxDrawdown: number;
+  avgWin: number;
+  avgLoss: number;
+  largestWin: number;
+  largestLoss: number;
+  finalCapital: number;
+  returnPercent: number;
+  trades: Trade[];
+}
+
+export interface BacktestConfig {
+  initialCapital: number;
+  threshold: number;
+  stopLoss?: number;
+  takeProfit?: number;
+  commission: number;
+  slippage: number;
+}
+
+export interface ProfitPrediction {
+  expectedProfit: number;
+  confidence: number;
+  bestCaseProfit: number;
+  worstCaseProfit: number;
+  recommendation: 'BUY' | 'SELL' | 'HOLD';
+  riskLevel: 'LOW' | 'MEDIUM' | 'HIGH';
+}
+
+
 export type Timeframe = '1m' | '5m' | '15m' | '1h';
 export type ChartMode = 'line' | 'candlestick';
