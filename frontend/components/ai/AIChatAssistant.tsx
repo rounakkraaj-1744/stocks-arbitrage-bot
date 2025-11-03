@@ -14,14 +14,14 @@ interface Message {
 interface AIChatAssistantProps {
   currentData: { [key: string]: ArbitrageData };
   selectedStock?: string;
-  onClose: () => void; // Add onClose prop
+  onClose: () => void;
 }
 
 export function AIChatAssistant({ currentData, selectedStock, onClose }: AIChatAssistantProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: 'Hi! I\'m your AI trading assistant. Ask me anything about arbitrage opportunities, market analysis, or trading strategies!',
+      content: '👋 Hi! I\'m your AI trading assistant powered by advanced ML models. Ask me anything about:\n\n• Arbitrage opportunities\n• Market analysis & trends\n• Trading strategies\n• Risk assessment\n• Portfolio optimization\n\nHow can I help you today?',
       timestamp: Date.now(),
     },
   ]);
@@ -92,7 +92,7 @@ export function AIChatAssistant({ currentData, selectedStock, onClose }: AIChatA
     } catch (error) {
       const errorMessage: Message = {
         role: 'assistant',
-        content: 'Sorry, I encountered an error connecting to the AI service. Please check your backend connection.',
+        content: '⚠️ Sorry, I encountered an error connecting to the AI service. Please check your backend connection and try again.',
         timestamp: Date.now(),
       };
       setMessages(prev => [...prev, errorMessage]);
@@ -109,21 +109,30 @@ export function AIChatAssistant({ currentData, selectedStock, onClose }: AIChatA
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end justify-end p-4">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-end justify-end p-4 animate-fade-in">
       <div
         ref={chatContainerRef}
-        className="flex flex-col bg-slate-900/95 backdrop-blur-xl border border-slate-700 rounded-2xl shadow-2xl h-[600px] w-full max-w-md overflow-hidden animate-slide-in"
+        className="flex flex-col bg-gradient-to-br from-slate-900 to-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl h-[600px] w-full max-w-md overflow-hidden animate-slide-up"
       >
         
         {/* Header */}
-        <div className="flex items-center justify-between bg-gradient-to-r from-purple-600/20 to-pink-600/20 border-b border-slate-700 px-4 py-3">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50" />
-            <span className="font-semibold text-white text-base">💬 AI Trading Assistant</span>
+        <div className="flex items-center justify-between bg-gradient-to-r from-purple-600/20 via-pink-600/20 to-purple-600/20 border-b border-slate-700/50 px-5 py-4">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50" />
+              <div className="absolute inset-0 w-3 h-3 bg-green-400 rounded-full animate-ping opacity-50" />
+            </div>
+            <div>
+              <span className="font-bold text-white text-base flex items-center gap-2">
+                <span>💬</span>
+                AI Trading Assistant
+              </span>
+              <span className="text-xs text-slate-400">Powered by Gemini</span>
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white transition-colors p-1 hover:bg-slate-700 rounded-lg"
+            className="text-slate-400 hover:text-white transition-all p-2 hover:bg-slate-700/50 rounded-lg"
             title="Close (ESC)"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -133,20 +142,20 @@ export function AIChatAssistant({ currentData, selectedStock, onClose }: AIChatA
         </div>
 
         {/* Messages Container */}
-        <div className="flex-1 px-4 py-3 space-y-3 overflow-y-auto" style={{ minHeight: 0 }}>
+        <div className="flex-1 px-4 py-4 space-y-4 overflow-y-auto" style={{ minHeight: 0 }}>
           {messages.map((msg, idx) => (
             <div
               key={idx}
               className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}
             >
               <div
-                className={`rounded-xl px-4 py-3 max-w-[85%] break-words shadow-lg ${
+                className={`rounded-2xl px-4 py-3 max-w-[85%] break-words shadow-lg ${
                   msg.role === 'user'
                     ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
-                    : 'bg-slate-800 text-slate-100 border border-slate-700'
+                    : 'bg-gradient-to-br from-slate-800/90 to-slate-800/70 text-slate-100 border border-slate-700/50'
                 }`}
               >
-                <div className="prose prose-sm prose-invert max-w-none prose-p:my-1 prose-ul:my-2 prose-li:my-0.5 prose-headings:my-2 prose-code:text-pink-400 prose-code:bg-slate-900/50 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-strong:text-white prose-strong:font-semibold prose-a:text-blue-400 prose-a:underline">
+                <div className="prose prose-sm prose-invert max-w-none prose-p:my-1 prose-ul:my-2 prose-li:my-0.5 prose-headings:my-2 prose-headings:text-white prose-headings:font-bold prose-code:text-pink-400 prose-code:bg-slate-900/50 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-strong:text-white prose-strong:font-bold prose-a:text-blue-400 prose-a:underline prose-a:decoration-blue-400/50">
                   <ReactMarkdown
                     components={{
                       a: ({ node, ...props }) => (
@@ -157,21 +166,26 @@ export function AIChatAssistant({ currentData, selectedStock, onClose }: AIChatA
                     {msg.content}
                   </ReactMarkdown>
                 </div>
-                <div className="text-[10px] opacity-60 mt-2 text-right">
-                  {new Date(msg.timestamp).toLocaleTimeString()}
+                <div className={`text-[10px] mt-2 text-right ${
+                  msg.role === 'user' ? 'opacity-70' : 'opacity-50'
+                }`}>
+                  {new Date(msg.timestamp).toLocaleTimeString('en-IN', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                  })}
                 </div>
               </div>
             </div>
           ))}
           
           {loading && (
-            <div className="flex justify-start">
-              <div className="px-4 py-3 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 shadow-lg">
+            <div className="flex justify-start animate-fade-in">
+              <div className="px-4 py-3 rounded-2xl bg-gradient-to-br from-slate-800/90 to-slate-800/70 text-slate-300 border border-slate-700/50 shadow-lg">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                  <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
-                  <span className="text-sm ml-2">Thinking...</span>
+                  <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }}></div>
+                  <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }}></div>
+                  <span className="text-sm ml-2 font-medium">AI is thinking...</span>
                 </div>
               </div>
             </div>
@@ -181,7 +195,7 @@ export function AIChatAssistant({ currentData, selectedStock, onClose }: AIChatA
         </div>
 
         {/* Input Area - Fixed at Bottom */}
-        <div className="border-t border-slate-700 bg-slate-900 px-4 py-3">
+        <div className="border-t border-slate-700/50 bg-slate-900/80 backdrop-blur-sm px-4 py-4">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -194,32 +208,36 @@ export function AIChatAssistant({ currentData, selectedStock, onClose }: AIChatA
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyPress}
-              placeholder="Ask me anything..."
+              placeholder="Ask me anything about trading..."
               disabled={loading}
-              className="flex-1 px-4 py-3 rounded-xl border border-slate-600 bg-slate-800 text-white placeholder-slate-400 outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-4 py-3 rounded-xl border border-slate-600/50 bg-slate-800/80 text-white placeholder-slate-400 outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
               autoFocus
               maxLength={500}
             />
             <button
               type="submit"
               disabled={loading || !input.trim()}
-              className="btn-premium font-semibold px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-purple-500/50"
+              className="font-bold px-5 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-purple-500/30 flex items-center gap-2"
             >
               {loading ? (
-                <span className="flex items-center gap-2">
+                <>
                   <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Wait
-                </span>
+                  <span className="hidden sm:inline">Wait</span>
+                </>
               ) : (
-                'Send'
+                <>
+                  <span>Send</span>
+                  <span>→</span>
+                </>
               )}
             </button>
           </form>
-          <div className="text-[10px] text-slate-500 mt-2 text-center">
-            Powered by Gemini AI • {messages.length} messages • Press ESC to close
+          <div className="flex items-center justify-between text-[10px] text-slate-500 mt-2">
+            <span>🤖 Powered by Gemini AI</span>
+            <span>{messages.length} messages • Press ESC to close</span>
           </div>
         </div>
       </div>

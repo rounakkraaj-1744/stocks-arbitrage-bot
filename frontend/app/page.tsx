@@ -161,7 +161,6 @@ export default function Home() {
           }}
         />
 
-        {/* Stock Details */}
         {selectedData && compareStocks.length === 0 && (
           <StockDetails
             data={selectedData}
@@ -169,11 +168,8 @@ export default function Home() {
           />
         )}
 
-        {/* Charts Section */}
         {selectedChartData.length > 0 && (
           <div className="grid grid-cols-1 gap-6">
-
-            {/* Price Chart */}
             <Card className="bg-gradient-to-br from-slate-900/90 to-slate-900/70 backdrop-blur-xl border border-slate-800/50 shadow-2xl hover:shadow-orange-500/10 transition-shadow duration-300">
               <CardHeader className="border-b border-slate-800/50 bg-slate-900/50">
                 <CardTitle className="flex items-center justify-between">

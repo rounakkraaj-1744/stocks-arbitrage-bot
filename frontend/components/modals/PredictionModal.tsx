@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArbitrageData, ChartDataPoint, PredictionResult, ProfitPrediction } from '@/lib/types';
 import { predictWithSMA, 
   predictWithEMA, 
@@ -55,168 +54,268 @@ export function PredictionModal({ stock, historicalData, onClose }: PredictionMo
 
   return (
     <div
-      className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto"
+      className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 backdrop-blur-xl overflow-y-auto"
       onClick={onClose}
     >
-      <div className="w-full max-w-6xl" onClick={(e) => e.stopPropagation()}>
-        <Card className="bg-slate-900/95 border-slate-700">
-          <CardHeader>
-            <CardTitle className="text-white text-2xl flex items-center gap-2">
-              <span>🔮</span>
-              Future Spread Prediction - {stock.symbol}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            
-            {/* Configuration */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="text-slate-300 text-sm font-medium block mb-2">
-                  Prediction Method
-                </label>
-                <select
-                  value={predictionMethod}
-                  onChange={(e) => setPredictionMethod(e.target.value as any)}
-                  className="w-full px-4 py-2 bg-slate-800 text-white border border-slate-600 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none"
-                >
-                  <option value="SMA">Simple Moving Average</option>
-                  <option value="EMA">Exponential Moving Average</option>
-                  <option value="LINEAR">Linear Regression</option>
-                </select>
+      <div className="w-full max-w-7xl my-8" onClick={(e) => e.stopPropagation()}>
+        <div className="bg-gradient-to-br from-slate-900 to-slate-900/90 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden">
+          
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-slate-800/50 bg-slate-900/80 backdrop-blur-xl">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 flex items-center justify-center">
+                <span className="text-2xl">🔮</span>
               </div>
-
               <div>
-                <label className="text-slate-300 text-sm font-medium block mb-2">
-                  Future Steps (minutes)
-                </label>
-                <input
-                  type="number"
-                  value={futureSteps}
-                  onChange={(e) => setFutureSteps(Number(e.target.value))}
-                  min={1}
-                  max={30}
-                  className="w-full px-4 py-2 bg-slate-800 text-white border border-slate-600 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="text-slate-300 text-sm font-medium block mb-2">
-                  Quantity (Lots)
-                </label>
-                <input
-                  type="number"
-                  value={quantity}
-                  onChange={(e) => setQuantity(Number(e.target.value))}
-                  min={1}
-                  max={100}
-                  className="w-full px-4 py-2 bg-slate-800 text-white border border-slate-600 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none"
-                />
+                <h2 className="text-2xl font-bold text-white">AI Spread Prediction</h2>
+                <p className="text-sm text-slate-400">Future forecast for {stock.symbol}</p>
               </div>
             </div>
-
-            <button onClick={handleGeneratePrediction}
-              className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-lg font-semibold transition-all shadow-lg hover:shadow-purple-500/50"
+            <button
+              onClick={onClose}
+              className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-500/50 text-red-400 rounded-xl transition-all duration-200 flex items-center gap-2 font-medium"
             >
-              🔮 Generate Prediction
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Close
             </button>
+          </div>
 
+          {/* Content */}
+          <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+            
+            {/* Configuration */}
+            <div className="mb-6 p-5 bg-gradient-to-br from-slate-800/50 to-slate-800/30 rounded-xl border border-slate-700/50 shadow-lg">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/30 flex items-center justify-center">
+                  <span className="text-lg">⚙️</span>
+                </div>
+                <h3 className="text-white font-bold text-lg">Prediction Configuration</h3>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                  <label className="text-slate-300 text-sm font-medium block mb-2">
+                    <span className="flex items-center gap-2">
+                      <span>🎯</span> Prediction Algorithm
+                    </span>
+                  </label>
+                  <select
+                    value={predictionMethod}
+                    onChange={(e) => setPredictionMethod(e.target.value as any)}
+                    className="w-full px-4 py-2.5 bg-slate-900/80 text-white border border-slate-600/50 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all font-medium"
+                  >
+                    <option value="SMA">Simple Moving Average</option>
+                    <option value="EMA">Exponential Moving Average (Recommended)</option>
+                    <option value="LINEAR">Linear Regression</option>
+                  </select>
+                  <p className="text-xs text-slate-500 mt-1">
+                    {predictionMethod === 'EMA' && 'Weights recent data more heavily'}
+                    {predictionMethod === 'SMA' && 'Equal weight to all data points'}
+                    {predictionMethod === 'LINEAR' && 'Fits trend line to data'}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="text-slate-300 text-sm font-medium block mb-2">
+                    <span className="flex items-center gap-2">
+                      <span>⏰</span> Forecast Horizon
+                    </span>
+                  </label>
+                  <input
+                    type="number"
+                    value={futureSteps}
+                    onChange={(e) => setFutureSteps(Number(e.target.value))}
+                    min={1}
+                    max={30}
+                    className="w-full px-4 py-2.5 bg-slate-900/80 text-white border border-slate-600/50 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all font-medium"
+                  />
+                  <p className="text-xs text-slate-500 mt-1">{futureSteps} minute{futureSteps > 1 ? 's' : ''} ahead</p>
+                </div>
+
+                <div>
+                  <label className="text-slate-300 text-sm font-medium block mb-2">
+                    <span className="flex items-center gap-2">
+                      <span>📦</span> Trading Quantity
+                    </span>
+                  </label>
+                  <input
+                    type="number"
+                    value={quantity}
+                    onChange={(e) => setQuantity(Number(e.target.value))}
+                    min={1}
+                    max={100}
+                    className="w-full px-4 py-2.5 bg-slate-900/80 text-white border border-slate-600/50 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-500/20 outline-none transition-all font-medium"
+                  />
+                  <p className="text-xs text-slate-500 mt-1">Lot size: {stock.lot_size}</p>
+                </div>
+              </div>
+
+              <button 
+                onClick={handleGeneratePrediction}
+                className="w-full px-6 py-3.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-xl font-bold transition-all shadow-lg hover:shadow-purple-500/30 flex items-center justify-center gap-2"
+              >
+                <span className="text-lg">🔮</span>
+                Generate AI Prediction
+              </button>
+            </div>
+
+            {/* Prediction Chart */}
             {predictions && predictions.length > 0 && (
-              <Card className="bg-slate-800/50 border-slate-700">
-                <CardHeader>
-                  <CardTitle className="text-orange-400 text-lg">
-                    📈 Predicted Spread with Confidence Intervals
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+              <div className="mb-6 bg-gradient-to-br from-slate-800/50 to-slate-800/30 rounded-xl border border-slate-700/50 overflow-hidden shadow-lg">
+                <div className="p-4 border-b border-slate-700/50 bg-slate-900/50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/30 flex items-center justify-center">
+                      <span className="text-lg">📈</span>
+                    </div>
+                    <h3 className="text-white font-bold text-lg">Predicted Spread with Confidence Intervals</h3>
+                  </div>
+                </div>
+                <div className="p-6">
                   <PredictionChart
                     historicalData={historicalData}
                     predictions={predictions}
                     height={400}
                   />
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
 
+            {/* Profit/Loss Forecast */}
             {profitPrediction && (
-              <Card className="bg-slate-800/50 border-slate-700">
-                <CardHeader>
-                  <CardTitle className="text-green-400 text-lg">
-                    💰 Profit/Loss Forecast
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    
-                    <div className="p-4 bg-gradient-to-br from-blue-900/30 to-blue-800/20 border border-blue-500/30 rounded-lg">
-                      <p className="text-slate-400 text-sm mb-1">Expected Profit</p>
-                      <p className="text-2xl font-bold text-blue-400">
-                        ₹{profitPrediction.expectedProfit.toFixed(2)}
-                      </p>
-                      <p className="text-xs text-slate-500 mt-1">
-                        Confidence: {profitPrediction.confidence.toFixed(0)}%
-                      </p>
-                    </div>
-
-                    <div className="p-4 bg-gradient-to-br from-green-900/30 to-green-800/20 border border-green-500/30 rounded-lg">
-                      <p className="text-slate-400 text-sm mb-1">Best Case</p>
-                      <p className="text-2xl font-bold text-green-400">
-                        ₹{profitPrediction.bestCaseProfit.toFixed(2)}
-                      </p>
-                      <p className="text-xs text-slate-500 mt-1">Upper Bound (95%)</p>
-                    </div>
-
-                    <div className="p-4 bg-gradient-to-br from-red-900/30 to-red-800/20 border border-red-500/30 rounded-lg">
-                      <p className="text-slate-400 text-sm mb-1">Worst Case</p>
-                      <p className="text-2xl font-bold text-red-400">
-                        ₹{profitPrediction.worstCaseProfit.toFixed(2)}
-                      </p>
-                      <p className="text-xs text-slate-500 mt-1">Lower Bound (95%)</p>
+              <div className="space-y-4">
+                <div className="bg-gradient-to-br from-slate-800/50 to-slate-800/30 rounded-xl border border-slate-700/50 overflow-hidden shadow-lg">
+                  <div className="p-4 border-b border-slate-700/50 bg-slate-900/50">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-green-500/10 border border-green-500/30 flex items-center justify-center">
+                        <span className="text-lg">💰</span>
+                      </div>
+                      <h3 className="text-white font-bold text-lg">Profit/Loss Forecast</h3>
+                      <span className="px-3 py-1 bg-slate-700/50 border border-slate-600/50 rounded-full text-xs text-slate-300 font-semibold">
+                        {profitPrediction.confidence.toFixed(0)}% Confidence
+                      </span>
                     </div>
                   </div>
+                  
+                  <div className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                      
+                      <div className="p-5 bg-gradient-to-br from-blue-500/10 to-blue-500/5 border border-blue-500/20 rounded-xl">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-slate-400 text-sm font-medium">Expected Profit</p>
+                          <span className="text-xl">💵</span>
+                        </div>
+                        <p className="text-3xl font-bold text-blue-400">
+                          ₹{profitPrediction.expectedProfit.toFixed(2)}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-2">
+                          Most likely outcome
+                        </p>
+                      </div>
 
-                  <div className="mt-6 p-4 bg-slate-900/50 rounded-lg border border-slate-700">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-slate-400 text-sm mb-2">AI Recommendation</p>
-                        <div className="flex items-center gap-4">
-                          <span className={`text-3xl font-bold ${
-                            profitPrediction.recommendation === 'BUY' ? 'text-green-400' :
-                            profitPrediction.recommendation === 'SELL' ? 'text-red-400' :
-                            'text-yellow-400'
-                          }`}>
-                            {profitPrediction.recommendation}
-                          </span>
-                          <span className={`px-4 py-2 rounded-full text-sm font-semibold ${
-                            profitPrediction.riskLevel === 'LOW' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
-                            profitPrediction.riskLevel === 'MEDIUM' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
-                            'bg-red-500/20 text-red-400 border border-red-500/30'
-                          }`}>
-                            {profitPrediction.riskLevel} RISK
-                          </span>
+                      <div className="p-5 bg-gradient-to-br from-green-500/10 to-green-500/5 border border-green-500/20 rounded-xl">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-slate-400 text-sm font-medium">Best Case</p>
+                          <span className="text-xl">🚀</span>
+                        </div>
+                        <p className="text-3xl font-bold text-green-400">
+                          +₹{profitPrediction.bestCaseProfit.toFixed(2)}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-2">
+                          Upper bound (95% CI)
+                        </p>
+                      </div>
+
+                      <div className="p-5 bg-gradient-to-br from-red-500/10 to-red-500/5 border border-red-500/20 rounded-xl">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-slate-400 text-sm font-medium">Worst Case</p>
+                          <span className="text-xl">⚠️</span>
+                        </div>
+                        <p className="text-3xl font-bold text-red-400">
+                          ₹{profitPrediction.worstCaseProfit.toFixed(2)}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-2">
+                          Lower bound (95% CI)
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* AI Recommendation */}
+                    <div className="p-5 bg-gradient-to-br from-slate-900/80 to-slate-900/50 rounded-xl border border-slate-700/50 shadow-inner">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-6">
+                          <div>
+                            <p className="text-slate-400 text-sm mb-2 font-medium">AI Recommendation</p>
+                            <div className="flex items-center gap-3">
+                              <span className={`text-4xl font-black ${
+                                profitPrediction.recommendation === 'BUY' ? 'text-green-400' :
+                                profitPrediction.recommendation === 'SELL' ? 'text-red-400' :
+                                'text-yellow-400'
+                              }`}>
+                                {profitPrediction.recommendation}
+                              </span>
+                              <div>
+                                <span className={`px-4 py-2 rounded-xl text-sm font-bold shadow-lg ${
+                                  profitPrediction.riskLevel === 'LOW' ? 'bg-green-500/20 text-green-400 border border-green-500/40' :
+                                  profitPrediction.riskLevel === 'MEDIUM' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/40' :
+                                  'bg-red-500/20 text-red-400 border border-red-500/40'
+                                }`}>
+                                  {profitPrediction.riskLevel} RISK
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-slate-400 text-sm mb-1 font-medium">Current Spot Price</p>
+                          <p className="text-2xl font-bold text-white">₹{stock.spot_price.toFixed(2)}</p>
+                          <p className="text-xs text-slate-500 mt-1">Live market price</p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-slate-400 text-sm mb-1">Current Price</p>
-                        <p className="text-xl font-bold text-white">₹{stock.spot_price.toFixed(2)}</p>
-                      </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+
+                {/* Info Footer */}
+                <div className="p-4 bg-slate-800/30 border border-slate-700/30 rounded-xl">
+                  <div className="flex items-center justify-between text-xs text-slate-400">
+                    <div className="flex items-center gap-4">
+                      <span>
+                        <span className="text-slate-500">Data Points:</span> 
+                        <span className="ml-1 text-blue-400 font-semibold">{historicalData.length}</span>
+                      </span>
+                      <span className="text-slate-600">•</span>
+                      <span>
+                        <span className="text-slate-500">Forecast:</span> 
+                        <span className="ml-1 text-purple-400 font-semibold">{futureSteps} min ahead</span>
+                      </span>
+                      <span className="text-slate-600">•</span>
+                      <span>
+                        <span className="text-slate-500">Method:</span> 
+                        <span className="ml-1 text-orange-400 font-semibold">{predictionMethod}</span>
+                      </span>
+                    </div>
+                    <span className="text-slate-500 italic">
+                      Predictions are estimates and not guaranteed
+                    </span>
+                  </div>
+                </div>
+              </div>
             )}
 
-            <div className="text-center text-sm text-slate-500">
-              Using {historicalData.length} historical data points • Predicting {futureSteps} minutes ahead
-            </div>
-
-            <button
-              onClick={onClose}
-              className="w-full px-4 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg transition-colors"
-            >
-              Close
-            </button>
-          </CardContent>
-        </Card>
+            {/* Empty State */}
+            {!predictions && (
+              <div className="text-center py-16">
+                <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 flex items-center justify-center">
+                  <span className="text-4xl">🔮</span>
+                </div>
+                <p className="text-slate-300 font-semibold text-lg mb-2">Ready to Predict</p>
+                <p className="text-slate-500 text-sm">Configure parameters above and generate your forecast</p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
