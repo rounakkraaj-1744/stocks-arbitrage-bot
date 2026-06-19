@@ -1,4 +1,4 @@
-import { type ChartDataPoint } from './types';
+import { type ChartDataPoint, type Trade } from './types';
 
 export interface BacktestConfig {
     initialCapital: number;
@@ -7,17 +7,6 @@ export interface BacktestConfig {
     takeProfit?: number;
     commission: number;
     slippage: number;
-}
-
-export interface Trade {
-    entryTime: number;
-    exitTime: number;
-    entryPrice: number;
-    exitPrice: number;
-    spread: number;
-    type: 'LONG' | 'SHORT';
-    profit: number;
-    profitPercent: number;
 }
 
 export interface BacktestMetrics {

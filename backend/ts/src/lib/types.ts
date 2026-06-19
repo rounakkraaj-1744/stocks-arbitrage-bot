@@ -56,3 +56,15 @@ export interface PredictionResult {
     upperBound: number;
     lowerBound: number;
 }
+
+export interface Trade {
+  entryTime: number;
+  exitTime: number;
+  entryPrice: number;
+  exitPrice: number;
+  type: 'long' | 'short';
+  profit: number;
+  profitPercent: number;
+  quantity?: number;
+  symbol?: string;
+}
