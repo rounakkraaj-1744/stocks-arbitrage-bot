@@ -2,12 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { ArbitrageData, ChartDataPoint } from '@/lib/types';
+import { useLocalStorage, loadFromLocalStorage } from './useLocalStorage';
 import { WEBSOCKET_URL, MAX_DATA_POINTS } from '@/lib/constants';
 
 export function useWebSocket() {
   const [status, setStatus] = useState<string>("Connecting...");
-  const [currentData, setCurrentData] = useState<{ [key: string]: ArbitrageData }>({});
-  const [chartData, setChartData] = useState<{ [key: string]: ChartDataPoint[] }>({});
+  const [currentData, setCurrentData] = useState<{ [key: string]: ArbitrageData }>(() => loadFromLocalStorage('cab_currentData', {}));
+  const [chartData, setChartData] = useState<{ [key: string]: ChartDataPoint[] }>(() => loadFromLocalStorage('cab_chartData', {}));
+
+  useLocalStorage('cab_currentData', currentData);
+  useLocalStorage('cab_chartData', chartData);
 
   useEffect(() => {
     const ws = new WebSocket(WEBSOCKET_URL);
@@ -32,24 +36,14 @@ export function useWebSocket() {
         setChartData((prev) => {
           const stockData = prev[parsed.symbol] || [];
           const lastPoint = stockData[stockData.length - 1];
-          
-          // Generate realistic OHLC data with proper volatility
-          // Base volatility: 0.3% to 0.8% per candle
-          const baseVolatility = 0.003 + (Math.random() * 0.005); // 0.3% - 0.8%
-          const trend = (Math.random() - 0.5) * 2; // -1 to +1
-          
-          // Use last close as open, or current price if first candle
+          const baseVolatility = 0.003 + (Math.random() * 0.005);
+          const trend = (Math.random() - 0.5) * 2;
           const open = lastPoint?.close || parsed.spot_price;
-          
-          // Calculate close with trend
           const priceChange = open * baseVolatility * trend;
           const close = open + priceChange;
-          
-          // Generate realistic high and low
-          // High and low should extend beyond open/close
           const upperWick = Math.abs(Math.random() * baseVolatility * open);
           const lowerWick = Math.abs(Math.random() * baseVolatility * open);
-          
+        
           const high = Math.max(open, close) + upperWick;
           const low = Math.min(open, close) - lowerWick;
           

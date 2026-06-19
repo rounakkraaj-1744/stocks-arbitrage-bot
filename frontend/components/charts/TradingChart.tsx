@@ -10,31 +10,47 @@ interface TradingChartProps {
 export function TradingChart({ data, symbol }: TradingChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const candleData = useMemo(() => {
+    const uniqueTimes = new Set<number>();
     return data.map(d => {
-      const open = d.spot * (1 - 0.001);
-      const close = d.spot;
-      const high = Math.max(open, close) * 1.002;
-      const low = Math.min(open, close) * 0.998;
+      const open = d.open ?? (d.spot * (1 - 0.001));
+      const close = d.close ?? d.spot;
+      const high = d.high ?? (Math.max(open, close) * 1.002);
+      const low = d.low ?? (Math.min(open, close) * 0.998);
       
+      const timeSec = Math.floor(d.timestamp / 1000);
       return {
-        time: (new Date(d.time).getTime() / 1000) as any,
+        time: timeSec as any,
         open,
         high,
         low,
         close,
       };
-    }).sort((a, b) => (a.time as number) - (b.time as number));
+    })
+    .filter(d => {
+      if (uniqueTimes.has(d.time)) return false;
+      uniqueTimes.add(d.time);
+      return true;
+    })
+    .sort((a, b) => (a.time as number) - (b.time as number));
   }, [data]);
 
   const volumeData = useMemo(() => {
+    const uniqueTimes = new Set<number>();
     return data.map(d => {
       const isUp = Math.random() > 0.5;
+      const timeSec = Math.floor(d.timestamp / 1000);
       return {
-        time: (new Date(d.time).getTime() / 1000) as any,
+        time: timeSec as any,
         value: Math.random() * 10000 + 5000,
         color: isUp ? 'rgba(34, 197, 94, 0.5)' : 'rgba(239, 68, 68, 0.5)'
       };
-    }).sort((a, b) => (a.time as number) - (b.time as number));
+    })
+    .filter(d => {
+      if (uniqueTimes.has(d.time)) return false;
+      uniqueTimes.add(d.time);
+      return true;
+    })
+    .sort((a, b) => (a.time as number) - (b.time as number));
   }, [data]);
 
   useEffect(() => {

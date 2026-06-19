@@ -75,40 +75,41 @@ export default function Home() {
       <Toaster position="top-right" toastOptions={{ className: 'bg-slate-800 text-white' }} />
 
       <DashboardLayout onMenuClick={handleMenuClick}>
-        <StatsRow opportunities={allStocks} totalMonitored={allStocks.length || 15}/>
+        {!showPortfolio && !showAnalytics && !showStrategy && !showAlerts && !showBacktest ? (
+          <>
+            <StatsRow opportunities={allStocks} totalMonitored={allStocks.length || 15}/>
+            <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr_300px] gap-6">
+              <WatchlistPanel data={allStocks} selectedStock={selectedStock} onSelect={setSelectedStock} />
+              <TradingChart data={selectedChartData} symbol={selectedStock} />
+              <SignalDetailsPanel stock={selectedData as any} onAction={() => setShowPaperTrade(true)} />
+            </div>
+            <LiveOpportunitiesTable data={allStocks} onExport={handleExport} />
+          </>
+        ) : null}
 
-        <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr_300px] gap-6">
-          <WatchlistPanel data={allStocks} selectedStock={selectedStock} onSelect={setSelectedStock} />
-          <TradingChart data={selectedChartData} symbol={selectedStock} />
-          <SignalDetailsPanel stock={selectedData as any} onAction={() => setShowPaperTrade(true)} />
-        </div>
+        {showPortfolio && (
+          <PortfolioDashboard onClose={() => setShowPortfolio(false)} />
+        )}
 
-        <LiveOpportunitiesTable data={allStocks} onExport={handleExport} />
+        {showAnalytics && selectedData && (
+          <SentimentDashboard selectedStock={selectedStock} historicalSpreads={selectedChartData.map(d => d.spread)} onClose={() => setShowAnalytics(false)} />
+        )}
 
+        {showStrategy && (
+          <StrategyBuilder onClose={() => setShowStrategy(false)} />
+        )}
+
+        {showAlerts && (
+          <AlertModal alerts={alerts} setAlerts={setAlerts} selectedStock={selectedStock} stocks={ALL_STOCKS} onClose={() => setShowAlerts(false)} />
+        )}
+
+        {showBacktest && (
+          <BacktestModal selectedStock={selectedStock} chartData={chartData} backtestResult={backtestResult} setBacktestResult={setBacktestResult} onClose={() => setShowBacktest(false)} />
+        )}
       </DashboardLayout>
 
       {showPaperTrade && selectedData && (
         <PaperTradeModal selectedStock={selectedData.symbol} currentSpot={selectedData.spot_price} currentFutures={selectedData.futures_price} onClose={() => setShowPaperTrade(false)} />
-      )}
-
-      {showPortfolio && (
-        <PortfolioDashboard onClose={() => setShowPortfolio(false)} />
-      )}
-
-      {showAnalytics && selectedData && (
-        <SentimentDashboard selectedStock={selectedStock} historicalSpreads={selectedChartData.map(d => d.spread)} onClose={() => setShowAnalytics(false)} />
-      )}
-
-      {showStrategy && (
-        <StrategyBuilder onClose={() => setShowStrategy(false)} />
-      )}
-
-      {showAlerts && (
-        <AlertModal alerts={alerts} setAlerts={setAlerts} selectedStock={selectedStock} stocks={ALL_STOCKS} onClose={() => setShowAlerts(false)} />
-      )}
-
-      {showBacktest && (
-        <BacktestModal selectedStock={selectedStock} chartData={chartData} backtestResult={backtestResult} setBacktestResult={setBacktestResult} onClose={() => setShowBacktest(false)} />
       )}
     </>
   );

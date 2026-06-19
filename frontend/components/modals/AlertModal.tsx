@@ -48,35 +48,28 @@ export function AlertModal({
   const triggeredAlerts = alerts.filter(a => a.triggered);
 
   return (
-    <div
-      className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 backdrop-blur-xl"
-      onClick={onClose}
-    >
-      <div className="w-full max-w-3xl max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
-        <div className="bg-gradient-to-br from-slate-900 to-slate-900/90 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden">
-
-          <div className="flex items-center justify-between p-6 border-b border-slate-800/50 bg-slate-900/80 backdrop-blur-xl">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 flex items-center justify-center">
-                <span className="text-2xl">🔔</span>
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-white">Alert Management</h2>
-                <p className="text-sm text-slate-400">Monitor price movements and spread changes</p>
-              </div>
+    <div className="flex flex-col w-full h-full bg-[#0b1120] rounded-2xl border border-slate-800/50 shadow-2xl overflow-hidden">
+      <div className="bg-gradient-to-br from-slate-900 to-slate-900/90 border-b border-slate-800/50">
+        <div className="flex items-center justify-between p-6 bg-slate-900/80">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 flex items-center justify-center">
+              <span className="text-2xl">🔔</span>
             </div>
-            <button
-              onClick={onClose}
-              className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-500/50 text-red-400 rounded-xl transition-all duration-200 flex items-center gap-2 font-medium"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-              Close
-            </button>
+            <div>
+              <h2 className="text-2xl font-bold text-white">Alert Management</h2>
+              <p className="text-sm text-slate-400">Monitor price movements and spread changes</p>
+            </div>
           </div>
+          <button
+            onClick={onClose}
+            className="text-sm px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors border border-slate-700"
+          >
+            ← Back to Dashboard
+          </button>
+        </div>
+      </div>
 
-          <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+      <div className="p-6 overflow-y-auto flex-1">
 
             <div className="mb-6 p-5 bg-gradient-to-br from-slate-800/50 to-slate-800/30 rounded-xl border border-slate-700/50 shadow-lg">
               <div className="flex items-center gap-3 mb-4">
@@ -197,8 +190,6 @@ export function AlertModal({
               </div>
             )}
           </div>
-        </div>
-      </div>
     </div>
   );
 }

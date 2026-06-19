@@ -35,17 +35,16 @@ export function PortfolioDashboard({ onClose }: PortfolioDashboardProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 backdrop-blur-xl" onClick={onClose}>
-      <div className="w-full max-w-4xl bg-gradient-to-br from-slate-900 to-slate-900/90 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-6 border-b border-slate-800/50 bg-slate-900/80">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center">
-              <span className="text-xl">💼</span>
-            </div>
-            <h2 className="text-xl font-bold text-white">Portfolio Dashboard</h2>
+    <div className="flex flex-col w-full h-full bg-[#0b1120] rounded-2xl border border-slate-800/50 shadow-2xl overflow-hidden">
+      <div className="flex items-center justify-between p-6 border-b border-slate-800/50 bg-[#0b1120]">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center">
+            <span className="text-xl">💼</span>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">✕</button>
+          <h2 className="text-xl font-bold text-white">Portfolio Dashboard</h2>
         </div>
+        <button onClick={onClose} className="text-sm px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors border border-slate-700">← Back to Dashboard</button>
+      </div>
         
         <div className="p-6 overflow-y-auto space-y-6">
           {isLoading ? (
@@ -120,7 +119,6 @@ export function PortfolioDashboard({ onClose }: PortfolioDashboardProps) {
             </>
           )}
         </div>
-      </div>
     </div>
   );
 }
