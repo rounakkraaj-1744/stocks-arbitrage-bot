@@ -37,7 +37,11 @@ fn generate_futures_price_from_spot(spot: f64) -> f64 {
 }
 
 pub fn create_nse_client() -> Client {
-    Client::builder().timeout(Duration::from_secs(15)).build().unwrap()
+    Client::builder()
+        .timeout(Duration::from_secs(30))
+        .pool_idle_timeout(Duration::from_secs(90))
+        .build()
+        .unwrap()
 }
 
 pub async fn fetch_nse_spot_price( client: &Client, symbol: &str ) -> Result<StockPrice, Box<dyn std::error::Error + Send + Sync>> {

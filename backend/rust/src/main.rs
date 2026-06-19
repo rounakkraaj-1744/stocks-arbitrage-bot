@@ -89,11 +89,11 @@ async fn main() {
                     }
                 }
                 
-                sleep(Duration::from_millis(800)).await;
+                sleep(Duration::from_millis(2000)).await;
             }
             
-            info!("Cycle complete. Waiting 5 seconds before next cycle...");
-            sleep(Duration::from_secs(5)).await;
+            info!("Cycle complete. Waiting 10 seconds before next cycle...");
+            sleep(Duration::from_secs(10)).await;
         }
     });
 
