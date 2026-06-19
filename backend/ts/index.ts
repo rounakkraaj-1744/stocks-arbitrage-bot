@@ -1,6 +1,7 @@
 import express, {type NextFunction, type Request, type Response} from 'express';
 import cors from 'cors';
 import aiRoutes from './src/routes/ai.routes.ts';
+import tradingRoutes from './src/routes/trading.routes.ts';
 import { errorHandler } from './src/middlewares/errorHandler.ts';
 import { logger } from './src/utils/logger.ts';
 import dotenv from "dotenv"
@@ -22,6 +23,7 @@ app.use((req:Request, res:Response, next:NextFunction) => {
 });
 
 app.use('/api/ai', aiRoutes);
+app.use('/api/trading', tradingRoutes);
 
 app.get('/health', (req:Request, res:Response) => {
   res.json({

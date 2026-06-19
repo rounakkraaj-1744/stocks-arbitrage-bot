@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from 'react';
-import { ChartDataPoint, BacktestResult, Trade } from '@/lib/types';
+import { ChartDataPoint, BacktestResult, Trade, MonteCarloResponse } from '@/lib/types';
 import toast from 'react-hot-toast';
+import { EquityCurveChart } from '@/components/charts/EquityCurveChart';
+import { DrawdownChart } from '@/components/charts/DrawdownChart';
 
 interface BacktestModalProps {
   selectedStock: string;
@@ -32,6 +34,7 @@ export function BacktestModal({
     const date = new Date();
     return date.toISOString().split('T')[0];
   });
+  const [isSimulating, setIsSimulating] = useState(false);
 
   const runBacktest = () => {
     const data = chartData[symbol] || [];
@@ -115,6 +118,57 @@ export function BacktestModal({
     toast.success("Backtest completed!");
   };
 
+  const runMonteCarloSimulation = async () => {
+    if (!backtestResult) {
+        toast.error("Please run the base backtest first to get win/loss parameters.");
+        return;
+    }
+
+    setIsSimulating(true);
+    const loadingToast = toast.loading("Running 1,000 Monte Carlo simulations...");
+
+    try {
+        const winningTrades = backtestResult.trades.filter(t => t.pnl > 0);
+        const losingTrades = backtestResult.trades.filter(t => t.pnl <= 0);
+
+        const avgWinAmount = winningTrades.reduce((sum, t) => sum + t.pnl, 0) / (winningTrades.length || 1);
+        const avgLossAmount = Math.abs(losingTrades.reduce((sum, t) => sum + t.pnl, 0)) / (losingTrades.length || 1);
+
+        const params = {
+            initial_capital: capital,
+            num_simulations: 1000,
+            days: 252, // Simulate for a year
+            win_rate: backtestResult.winRate / 100.0,
+            avg_win_pct: avgWinAmount / capital,
+            avg_loss_pct: -(avgLossAmount / capital), // keep it negative
+        };
+
+        const res = await fetch("http://127.0.0.1:3030/api/backtest", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(params)
+        });
+
+        if (!res.ok) throw new Error("Simulation failed");
+
+        const mcResult: MonteCarloResponse = await res.json();
+        
+        setBacktestResult({
+            ...backtestResult,
+            monteCarloResult: mcResult
+        });
+        
+        toast.success("Simulation complete!", { id: loadingToast });
+    } catch (error) {
+        console.error(error);
+        toast.error("Failed to run Monte Carlo simulation", { id: loadingToast });
+    } finally {
+        setIsSimulating(false);
+    }
+  };
+
   return (
     <div
       className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 backdrop-blur-xl overflow-y-auto"
@@ -123,7 +177,6 @@ export function BacktestModal({
       <div className="w-full max-w-6xl my-8" onClick={(e) => e.stopPropagation()}>
         <div className="bg-gradient-to-br from-slate-900 to-slate-900/90 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden">
           
-          {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-slate-800/50 bg-slate-900/80 backdrop-blur-xl">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500/20 to-green-500/20 border border-emerald-500/30 flex items-center justify-center">
@@ -220,13 +273,24 @@ export function BacktestModal({
                 </div>
               </div>
               
-              <button
-                onClick={runBacktest}
-                className="w-full px-6 py-3.5 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white rounded-xl font-bold transition-all shadow-lg hover:shadow-emerald-500/30 flex items-center justify-center gap-2"
-              >
-                <span className="text-lg">🚀</span>
-                Run Backtest Analysis
-              </button>
+              <div className="flex gap-4">
+                  <button
+                    onClick={runBacktest}
+                    className="flex-1 px-6 py-3.5 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white rounded-xl font-bold transition-all shadow-lg hover:shadow-emerald-500/30 flex items-center justify-center gap-2"
+                  >
+                    <span className="text-lg">🚀</span>
+                    Run Base Backtest
+                  </button>
+
+                  <button
+                    onClick={runMonteCarloSimulation}
+                    disabled={!backtestResult || isSimulating}
+                    className="flex-1 px-6 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-bold transition-all shadow-lg hover:shadow-blue-500/30 flex items-center justify-center gap-2"
+                  >
+                    <span className="text-lg">🔮</span>
+                    {isSimulating ? 'Simulating...' : 'Monte Carlo Simulation'}
+                  </button>
+              </div>
             </div>
 
             {/* Backtest Results */}
@@ -290,6 +354,61 @@ export function BacktestModal({
                     <p className="text-3xl font-bold text-cyan-400">{backtestResult.profitableTrades}</p>
                   </div>
                 </div>
+
+                {backtestResult.monteCarloResult && (() => {
+                    const mc = backtestResult.monteCarloResult;
+                    const numDays = mc.sample_simulations[0]?.equity_curve.length || 0;
+                    const chartData = [];
+                    const drawdownData = [];
+
+                    for (let i = 0; i < numDays; i++) {
+                        const eqPoint: any = { day: i };
+                        const ddPoint: any = { day: i };
+                        
+                        mc.sample_simulations.forEach((sim, idx) => {
+                            eqPoint[`sim${idx}`] = sim.equity_curve[i];
+                            const pastEq = sim.equity_curve.slice(0, i+1);
+                            const peak = Math.max(...pastEq, capital);
+                            ddPoint[`sim${idx}`] = ((peak - sim.equity_curve[i]) / peak) * 100;
+                        });
+                        
+                        chartData.push(eqPoint);
+                        drawdownData.push(ddPoint);
+                    }
+
+                    return (
+                        <div className="bg-gradient-to-br from-slate-800/50 to-slate-800/30 rounded-xl border border-slate-700/50 p-6">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/30 flex items-center justify-center">
+                                    <span className="text-lg">🔮</span>
+                                </div>
+                                <h3 className="text-white font-bold text-lg">Monte Carlo Simulation (1,000 runs)</h3>
+                            </div>
+
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                                <div className="p-3 bg-slate-900/50 rounded-lg border border-slate-700/50">
+                                    <p className="text-xs text-slate-400">Avg Final Equity</p>
+                                    <p className="text-lg font-bold text-blue-400">₹{mc.average_final_equity.toFixed(2)}</p>
+                                </div>
+                                <div className="p-3 bg-slate-900/50 rounded-lg border border-slate-700/50">
+                                    <p className="text-xs text-slate-400">Best Case Equity</p>
+                                    <p className="text-lg font-bold text-green-400">₹{mc.best_case_equity.toFixed(2)}</p>
+                                </div>
+                                <div className="p-3 bg-slate-900/50 rounded-lg border border-slate-700/50">
+                                    <p className="text-xs text-slate-400">Worst Case Equity</p>
+                                    <p className="text-lg font-bold text-red-400">₹{mc.worst_case_equity.toFixed(2)}</p>
+                                </div>
+                                <div className="p-3 bg-slate-900/50 rounded-lg border border-slate-700/50">
+                                    <p className="text-xs text-slate-400">Avg Max Drawdown</p>
+                                    <p className="text-lg font-bold text-orange-400">{mc.average_max_drawdown.toFixed(2)}%</p>
+                                </div>
+                            </div>
+
+                            <EquityCurveChart data={chartData} />
+                            <DrawdownChart data={drawdownData} />
+                        </div>
+                    );
+                })()}
 
                 {/* Trade History */}
                 <div className="bg-gradient-to-br from-slate-800/50 to-slate-800/30 rounded-xl border border-slate-700/50 overflow-hidden">

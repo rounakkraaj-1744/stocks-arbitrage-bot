@@ -18,6 +18,9 @@ interface HeaderProps {
   onShowAIChat: () => void;
   onShowPortfolioOptimizer: () => void;
   onShowPrediction: () => void;
+  onShowPaperTrade: () => void;
+  onShowStrategyBuilder: () => void;
+  onShowPortfolio: () => void;
 }
 
 export function Header({
@@ -36,6 +39,9 @@ export function Header({
   onShowAIChat,
   onShowPortfolioOptimizer,
   onShowPrediction,
+  onShowPaperTrade,
+  onShowStrategyBuilder,
+  onShowPortfolio,
 }: HeaderProps) {
   return (
     <div className="mb-8">
@@ -183,6 +189,36 @@ export function Header({
                     {alertsCount}
                   </span>
                 )}
+              </button>
+            </div>
+
+            {/* Trading Desk Group */}
+            <div className="flex items-center gap-2 p-1 bg-slate-800/40 rounded-xl border border-slate-700/50">
+              <div className="px-2 py-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                Trading Desk
+              </div>
+              <button
+                onClick={onShowPaperTrade}
+                className="group relative px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 rounded-lg border border-indigo-500/20 hover:border-indigo-500/40 transition-all text-sm font-medium flex items-center gap-2"
+              >
+                <span className="text-base">💸</span>
+                <span>Trade</span>
+              </button>
+              
+              <button
+                onClick={onShowStrategyBuilder}
+                className="group relative px-4 py-2 bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 rounded-lg border border-teal-500/20 hover:border-teal-500/40 transition-all text-sm font-medium flex items-center gap-2"
+              >
+                <span className="text-base">⚙️</span>
+                <span>Strategies</span>
+              </button>
+              
+              <button
+                onClick={onShowPortfolio}
+                className="group relative px-4 py-2 bg-orange-500/10 hover:bg-orange-500/20 text-orange-300 rounded-lg border border-orange-500/20 hover:border-orange-500/40 transition-all text-sm font-medium flex items-center gap-2"
+              >
+                <span className="text-base">💼</span>
+                <span>Portfolio</span>
               </button>
             </div>
 

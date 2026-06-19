@@ -27,11 +27,17 @@ export interface ChartDataPoint {
   close?: number;
 }
 
+export interface AlertCondition {
+  field: 'spread' | 'spot_price' | 'futures_price';
+  operator: 'above' | 'below';
+  value: number;
+}
+
 export interface Alert {
   id: string;
   symbol: string;
-  type: 'spread_above' | 'spread_below' | 'price_above' | 'price_below';
-  value: number;
+  type: 'single' | 'smart';
+  conditions: AlertCondition[];
   triggered: boolean;
   createdAt: number;
 }
@@ -48,6 +54,20 @@ export interface Trade {
   pnl: number;
 }
 
+export interface SimulationResult {
+  equity_curve: number[];
+  final_equity: number;
+  max_drawdown: number;
+}
+
+export interface MonteCarloResponse {
+  average_final_equity: number;
+  best_case_equity: number;
+  worst_case_equity: number;
+  average_max_drawdown: number;
+  sample_simulations: SimulationResult[];
+}
+
 export interface BacktestResult {
   totalTrades: number;
   profitableTrades: number;
@@ -56,6 +76,7 @@ export interface BacktestResult {
   sharpeRatio: number;
   winRate: number;
   trades: Trade[];
+  monteCarloResult?: MonteCarloResponse;
 }
 
 export interface PredictionResult {

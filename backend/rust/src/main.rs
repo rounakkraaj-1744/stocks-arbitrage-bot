@@ -4,6 +4,7 @@ mod profit_calculator;
 mod trend_tracker;
 mod data_logger;
 mod exchange_api;
+mod backtester;
 
 use warp::Filter;
 use warp::ws::{Message, WebSocket};
@@ -12,6 +13,7 @@ use log::{info, error, warn};
 use nse_data_api::{fetch_nse_spot_price, fetch_nse_futures_price, create_nse_client};
 use arbitrage_detector::{detect_cash_futures_arbitrage, ArbitrageResult};
 use trend_tracker::{create_spread_tracker, calculate_trend, SpreadHistory};
+use backtester::{run_monte_carlo, BacktestParams};
 use data_logger::{initialize_csv_log, log_to_csv};
 use std::convert::Infallible;
 use tokio::sync::broadcast;
@@ -101,7 +103,17 @@ async fn main() {
 
     let arbitrage_route = warp::path("arbitrage").and(warp::path::param::<String>()).and(warp::get()).and_then(handle_arbitrage_check);
 
-    let routes = ws_route.or(arbitrage_route);
+    let backtest_route = warp::path("api")
+        .and(warp::path("backtest"))
+        .and(warp::post())
+        .and(warp::body::json())
+        .map(|params: BacktestParams| {
+            let result = run_monte_carlo(params);
+            warp::reply::json(&result)
+        });
+
+    let routes = ws_route.or(arbitrage_route).or(backtest_route)
+        .with(warp::cors().allow_any_origin().allow_headers(vec!["content-type"]).allow_methods(vec!["GET", "POST"]));
 
     info!("Server running on http://127.0.0.1:3030");
     info!("WebSocket endpoint: ws://127.0.0.1:3030/ws");

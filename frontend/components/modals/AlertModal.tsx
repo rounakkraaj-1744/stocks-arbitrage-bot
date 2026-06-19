@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert } from '@/lib/types';
+import { Alert, AlertCondition } from '@/lib/types';
 import { AlertForm } from '@/components/AlertForm';
 import toast from 'react-hot-toast';
 
@@ -19,12 +19,12 @@ export function AlertModal({
   onClose,
   setAlerts,
 }: AlertModalProps) {
-  const addAlert = (symbol: string, type: Alert['type'], value: number) => {
+  const addAlert = (symbol: string, type: Alert['type'], conditions: AlertCondition[]) => {
     const newAlert: Alert = {
       id: `${Date.now()}-${Math.random()}`,
       symbol,
       type,
-      value,
+      conditions,
       triggered: false,
       createdAt: Date.now(),
     };
@@ -55,7 +55,6 @@ export function AlertModal({
       <div className="w-full max-w-3xl max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <div className="bg-gradient-to-br from-slate-900 to-slate-900/90 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden">
 
-          {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-slate-800/50 bg-slate-900/80 backdrop-blur-xl">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 flex items-center justify-center">
@@ -77,10 +76,8 @@ export function AlertModal({
             </button>
           </div>
 
-          {/* Content */}
           <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
 
-            {/* Create New Alert Form */}
             <div className="mb-6 p-5 bg-gradient-to-br from-slate-800/50 to-slate-800/30 rounded-xl border border-slate-700/50 shadow-lg">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/30 flex items-center justify-center">
@@ -95,7 +92,6 @@ export function AlertModal({
               />
             </div>
 
-            {/* Stats Cards */}
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="p-4 bg-gradient-to-br from-blue-500/10 to-blue-500/5 border border-blue-500/20 rounded-xl">
                 <div className="flex items-center justify-between">
@@ -121,7 +117,6 @@ export function AlertModal({
               </div>
             </div>
 
-            {/* Active Alerts List */}
             {alerts.length === 0 ? (
               <div className="text-center py-12">
                 <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-slate-700/50 to-slate-800/50 border border-slate-600/50 flex items-center justify-center">
@@ -144,15 +139,15 @@ export function AlertModal({
                     <div
                       key={alert.id}
                       className={`group p-4 rounded-xl border transition-all duration-200 ${alert.triggered
-                          ? 'bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-green-500/30 shadow-lg shadow-green-500/10'
-                          : 'bg-slate-800/30 border-slate-700/50 hover:bg-slate-800/50 hover:border-slate-600/50'
+                        ? 'bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-green-500/30 shadow-lg shadow-green-500/10'
+                        : 'bg-slate-800/30 border-slate-700/50 hover:bg-slate-800/50 hover:border-slate-600/50'
                         }`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4 flex-1">
                           <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${alert.triggered
-                              ? 'bg-green-500/20 border border-green-500/40'
-                              : 'bg-slate-700/50 border border-slate-600/50'
+                            ? 'bg-green-500/20 border border-green-500/40'
+                            : 'bg-slate-700/50 border border-slate-600/50'
                             }`}>
                             <span className="text-lg">{alert.triggered ? '✅' : '🔔'}</span>
                           </div>
@@ -163,14 +158,15 @@ export function AlertModal({
                                 {alert.type.replace('_', ' ').toUpperCase()}
                               </span>
                             </div>
-                            <div className="flex items-center gap-4 text-sm">
-                              <p className="text-slate-400">
-                                Trigger: <span className="text-orange-400 font-semibold">
-                                  {alert.type.includes('price') ? `₹${alert.value}` : `${alert.value}%`}
-                                </span>
-                              </p>
+                            <div className="flex flex-col gap-1 text-sm mt-2">
+                              {alert.conditions.map((cond, i) => (
+                                <p key={i} className="text-slate-400 text-xs">
+                                  {i > 0 && <span className="text-orange-400 font-bold mr-1">AND</span>}
+                                  {cond.field.replace('_', ' ')} <span className="text-blue-400">{cond.operator}</span> <span className="text-green-400 font-semibold">{cond.value}</span>
+                                </p>
+                              ))}
                               {alert.triggered && (
-                                <span className="flex items-center gap-1 text-green-400 text-xs">
+                                <span className="flex items-center gap-1 text-green-400 text-xs mt-1">
                                   <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
                                   Triggered
                                 </span>
