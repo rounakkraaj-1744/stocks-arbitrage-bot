@@ -1,14 +1,11 @@
 import React from 'react';
 import { 
   LayoutDashboard, 
-  Search, 
-  Signal, 
   Briefcase, 
   History, 
   Bot, 
   PieChart, 
   Bell, 
-  Star, 
   FileText, 
   Settings, 
   HelpCircle,
@@ -19,8 +16,6 @@ import {
 
 const MENU_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, active: true },
-  { id: 'scanner', label: 'Market Scanner', icon: Search },
-  { id: 'signals', label: 'Arbitrage Signals', icon: Signal },
   { id: 'strategies', label: 'Strategies', icon: Briefcase },
   { id: 'backtesting', label: 'Backtesting', icon: History },
   { id: 'ai', label: 'AI Assistant', icon: Bot, badge: 'BETA' },
@@ -29,7 +24,6 @@ const MENU_ITEMS = [
 ];
 
 const BOTTOM_MENU = [
-  { id: 'watchlist', label: 'Watchlist', icon: Star },
   { id: 'reports', label: 'Reports', icon: FileText },
   { id: 'settings', label: 'Settings', icon: Settings },
   { id: 'help', label: 'Help & Docs', icon: HelpCircle },
