@@ -1,4 +1,4 @@
-import { type ChartDataPoint, type PredictionResult } from './types';
+import { type ChartDataPoint, type PredictionResult } from '../types/types';
 
 export function predictWithSMA(data: ChartDataPoint[], periods: number = 5, futureSteps: number = 5): PredictionResult[] {
     if (data.length < periods) return [];
@@ -35,17 +35,17 @@ export function predictWithEMA(data: ChartDataPoint[], alpha: number = 0.3, futu
     const spreads = data.map(d => d.spread);
     const predictions: PredictionResult[] = [];
 
-    let ema = spreads[0];
+    let ema = spreads[0]!;
     for (let i = 1; i < spreads.length; i++) {
         ema = (alpha * spreads[i]!) + ((1 - alpha) * ema);
     }
 
     const errors = spreads.map((val, idx) => {
-        let emaAtIdx = spreads[0];
+        let emaAtIdx = spreads[0]!;
         for (let j = 1; j <= idx; j++) {
             emaAtIdx = (alpha * spreads[j]!) + ((1 - alpha) * emaAtIdx);
         }
-        return val - emaAtIdx;
+        return val - emaAtIdx!;
     });
 
     const variance = errors.reduce((sum, e) => sum + e * e, 0) / errors.length;

@@ -1,17 +1,15 @@
-import { type ChartDataPoint, type Trade } from './types';
+import { type ChartDataPoint, type Trade } from '../types/types';
 
 export interface BacktestConfig {
     initialCapital: number;
     commission: number;
     slippage: number;
     strategy: 'spread_threshold' | 'mean_reversion' | 'momentum' | 'custom';
-
     spreadThreshold?: number;
     meanReversionPeriod?: number;
     momentumPeriod?: number;
     stopLoss?: number;
     takeProfit?: number;
-
     enableMonteCarlo?: boolean;
     monteCarloRuns?: number;
     enableWalkForward?: boolean;
@@ -25,30 +23,24 @@ export interface EnhancedBacktestResult {
     totalProfit: number;
     totalLoss: number;
     netProfit: number;
-
     winRate: number;
     profitFactor: number;
     sharpeRatio: number;
     sortinoRatio: number;
     calmarRatio: number;
-
     maxDrawdown: number;
     maxDrawdownPercent: number;
     averageDrawdown: number;
     maxConsecutiveWins: number;
     maxConsecutiveLosses: number;
-
-    // Trade analysis
     averageWin: number;
     averageLoss: number;
     largestWin: number;
     largestLoss: number;
     expectancy: number;
-
     equityCurve: EquityPoint[];
     drawdownCurve: DrawdownPoint[];
     trades: Trade[];
-
     tradeDistribution: TradeDistribution;
     winStreakDistribution: number[];
     lossStreakDistribution: number[];
@@ -154,6 +146,7 @@ export class EnhancedBacktestEngine {
                 entryPrice = current!.spread;
                 entryTime = current!.timestamp;
             }
+
             else if (signal === 'sell' && position === 'long') {
                 const exitPrice = current!.spread;
                 const profit = this.calculateProfit(entryPrice, exitPrice, 'long');
@@ -201,7 +194,8 @@ export class EnhancedBacktestEngine {
 
     private meanReversionSignal(index: number): 'buy' | 'sell' | 'hold' {
         const period = this.config.meanReversionPeriod || 20;
-        if (index < period) return 'hold';
+        if (index < period)
+            return 'hold';
 
         const recentData = this.data.slice(index - period, index);
         const mean = recentData.reduce((sum, d) => sum + d.spread, 0) / period;
@@ -274,7 +268,7 @@ export class EnhancedBacktestEngine {
         }));
     }
 
-    private calculateMetrics(trades: Trade[], equityCurve: EquityPoint[], drawdownCurve: DrawdownPoint[]): Partial<EnhancedBacktestResult> {
+    private calculateMetrics(trades: Trade[], equityCurve: EquityPoint[], drawdownCurve: DrawdownPoint[]) {
         const winningTrades = trades.filter(t => t.profit > 0);
         const losingTrades = trades.filter(t => t.profit < 0);
 

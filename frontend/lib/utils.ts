@@ -9,7 +9,8 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function aggregateData(data: ChartDataPoint[], interval: Timeframe): ChartDataPoint[] {
-  if (interval === '1m' || data.length === 0) return data;
+  if (interval === '1m' || data.length === 0)
+    return data;
 
   const intervalMs = TIMEFRAME_INTERVALS[interval];
   const aggregated: ChartDataPoint[] = [];

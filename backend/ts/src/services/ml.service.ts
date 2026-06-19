@@ -15,8 +15,10 @@ export function predictNextSpread(historicalSpreads: number[]): { prediction: nu
   
   const slope = regression.slope;
   let trend = 'Neutral';
-  if (slope > 0.01) trend = 'Widening';
-  if (slope < -0.01) trend = 'Narrowing';
+  if (slope > 0.01)
+    trend = 'Widening';
+  if (slope < -0.01)
+    trend = 'Narrowing';
 
   return { prediction, trend };
 }

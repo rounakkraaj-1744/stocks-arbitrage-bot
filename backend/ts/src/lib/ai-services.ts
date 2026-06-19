@@ -1,7 +1,7 @@
 import Groq from 'groq-sdk';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { AI_CONFIG, AI_PROMPTS } from './ai-config';
-import { type ArbitrageData, type ChartDataPoint } from './types';
+import { type ArbitrageData, type ChartDataPoint } from '../types/types';
 
 const groq = new Groq({
   apiKey: AI_CONFIG.GROQ_API_KEY,
@@ -33,8 +33,8 @@ export async function generateTradeSignal(
   try {
     const recentData = historicalData.slice(-10);
     const avgSpread = recentData.reduce((sum, d) => sum + d.spread, 0) / recentData.length;
-    const spreadTrend = recentData.length > 1 
-      ? recentData[recentData.length - 1]!.spread - recentData[0]!.spread 
+    const spreadTrend = recentData.length > 1
+      ? recentData[recentData.length - 1]!.spread - recentData[0]!.spread
       : 0;
 
     const prompt = `${AI_PROMPTS.TRADE_SIGNAL}
@@ -77,7 +77,7 @@ Respond ONLY with valid JSON in this exact format:
     });
 
     const response = completion.choices[0]?.message?.content || '{}';
-    
+
     let jsonMatch = response.match(/\{[\s\S]*\}/);
     const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : {
       action: 'HOLD',
@@ -104,7 +104,7 @@ Respond ONLY with valid JSON in this exact format:
   }
 }
 
-export async function analyzeMarket( stock: ArbitrageData, historicalData: ChartDataPoint[]): Promise<AIMarketAnalysis> {
+export async function analyzeMarket(stock: ArbitrageData, historicalData: ChartDataPoint[]): Promise<AIMarketAnalysis> {
   try {
     const model = genAI.getGenerativeModel({ model: AI_CONFIG.MODEL_GEMINI });
 
@@ -120,7 +120,7 @@ Action: ${stock.action}`;
 
     const sentiment = text.toLowerCase().includes('bullish') ? 'BULLISH'
       : text.toLowerCase().includes('bearish') ? 'BEARISH'
-      : 'NEUTRAL';
+        : 'NEUTRAL';
 
     return {
       summary: text,
@@ -174,7 +174,7 @@ Provide a helpful, concise response (max 150 words).`;
   }
 }
 
-export async function optimizePortfolio( opportunities: ArbitrageData[], totalCapital: number): Promise<{ allocations: { symbol: string; amount: number; percentage: number }[]; reasoning: string; expectedReturn: number;}> {
+export async function optimizePortfolio(opportunities: ArbitrageData[], totalCapital: number): Promise<{ allocations: { symbol: string; amount: number; percentage: number }[]; reasoning: string; expectedReturn: number; }> {
   try {
     const completion = await groq.chat.completions.create({
       messages: [
@@ -188,9 +188,9 @@ export async function optimizePortfolio( opportunities: ArbitrageData[], totalCa
 
 Available Capital: ₹${totalCapital}
 Opportunities:
-${opportunities.map(o => 
-  `${o.symbol}: Spread ${o.spread_percentage}%, ROI ${o.roi_percentage}%, Risk: ${o.spread_trend}`
-).join('\n')}
+${opportunities.map(o =>
+            `${o.symbol}: Spread ${o.spread_percentage}%, ROI ${o.roi_percentage}%, Risk: ${o.spread_trend}`
+          ).join('\n')}
 
 Respond with JSON:
 {

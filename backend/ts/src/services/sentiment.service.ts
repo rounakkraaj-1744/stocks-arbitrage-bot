@@ -35,7 +35,8 @@ export async function fetchNewsSentiment(symbol: string) {
       label: result.label || 'Neutral',
       summary: result.summary || 'Sentiment analysis unavailable.'
     };
-  } catch (error) {
+  }
+  catch (error) {
     console.error(`Sentiment analysis failed for ${symbol}:`, error);
     return { score: 0, label: 'Neutral', summary: 'Error fetching sentiment.' };
   }

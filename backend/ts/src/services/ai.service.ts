@@ -1,14 +1,14 @@
 import Groq from 'groq-sdk';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { AI_CONFIG, AI_PROMPTS } from '../lib/ai-config.ts';
-import { type ArbitrageData, type ChartDataPoint, type AITradeSignal, type AIMarketAnalysis, type PortfolioOptimization } from '../lib/types.ts';
+import { type ArbitrageData, type ChartDataPoint, type AITradeSignal, type AIMarketAnalysis, type PortfolioOptimization } from '../types/types.ts';
 
 export const groq = new Groq({ apiKey: AI_CONFIG.GROQ_API_KEY });
 
 const genAI = new GoogleGenerativeAI(AI_CONFIG.GEMINI_API_KEY);
 
 export class AIService {
-    static async generateTradeSignal( stock: ArbitrageData, historicalData: ChartDataPoint[] ): Promise<AITradeSignal> {
+    static async generateTradeSignal(stock: ArbitrageData, historicalData: ChartDataPoint[]): Promise<AITradeSignal> {
         try {
             const recentData = historicalData.slice(-10);
             const avgSpread = recentData.reduce((sum, d) => sum + d.spread, 0) / recentData.length;
@@ -74,7 +74,7 @@ export class AIService {
         }
     }
 
-    static async analyzeMarket( stock: ArbitrageData, historicalData: ChartDataPoint[] ): Promise<AIMarketAnalysis> {
+    static async analyzeMarket(stock: ArbitrageData, historicalData: ChartDataPoint[]): Promise<AIMarketAnalysis> {
         try {
             const model = genAI.getGenerativeModel({ model: AI_CONFIG.MODEL_GEMINI });
 
@@ -102,7 +102,7 @@ export class AIService {
         }
     }
 
-    static async chatWithAI( userMessage: string, context: { currentData: { [key: string]: ArbitrageData }; selectedStock?: string; }): Promise<string> {
+    static async chatWithAI(userMessage: string, context: { currentData: { [key: string]: ArbitrageData }; selectedStock?: string; }): Promise<string> {
         try {
             const model = genAI.getGenerativeModel({ model: AI_CONFIG.MODEL_GEMINI });
 
@@ -127,7 +127,7 @@ export class AIService {
         }
     }
 
-    static async optimizePortfolio( opportunities: ArbitrageData[], totalCapital: number ): Promise<PortfolioOptimization> {
+    static async optimizePortfolio(opportunities: ArbitrageData[], totalCapital: number): Promise<PortfolioOptimization> {
         try {
             const completion = await groq.chat.completions.create({
                 messages: [

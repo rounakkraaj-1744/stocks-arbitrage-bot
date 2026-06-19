@@ -30,9 +30,9 @@ pub fn detect_put_call_parity(
     risk_free_rate: f64,
     time_to_expiry_years: f64,
 ) -> PutCallParityOpportunity {
-    // Basic PCP: C - P = S - X / (1 + r)^t
-    // For futures equivalence: F = S * (1 + r)^t
-    // Simplified synthetic futures: C - P + X
+    // basic PCP: C - P = S - X / (1 + r)^t
+    // for futures equivalence: F = S * (1 + r)^t
+    // simplified synthetic futures: C - P + X
     
     let discount_factor = (1.0 + risk_free_rate).powf(time_to_expiry_years);
     let pv_strike = strike / discount_factor;

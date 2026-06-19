@@ -3,34 +3,27 @@ use std::sync::{Arc, Mutex};
 
 pub type SpreadHistory = Arc<Mutex<HashMap<String, Vec<f64>>>>;
 
-/// Create a new spread history tracker
 pub fn create_spread_tracker() -> SpreadHistory {
     Arc::new(Mutex::new(HashMap::new()))
 }
 
-/// Calculate trend based on recent spread history
 pub fn calculate_trend( symbol: &str, current_spread: f64, history: &SpreadHistory ) -> String {
     let mut history_map = history.lock().unwrap();
     let spreads = history_map.entry(symbol.to_string()).or_insert_with(Vec::new);
     
-    // Add current spread
     spreads.push(current_spread);
     
-    // Keep only last 5 values for trend calculation
     if spreads.len() > 5 {
         spreads.remove(0);
     }
-    
-    // Need at least 3 data points to calculate trend
+
     if spreads.len() < 3 {
         return "stable".to_string();
     }
     
-    // Calculate average of recent 2 values vs older values
     let recent_avg = spreads[spreads.len() - 2..].iter().sum::<f64>() / 2.0;
     let older_avg = spreads[..spreads.len() - 2].iter().sum::<f64>() / (spreads.len() - 2) as f64;
     
-    // Threshold for trend detection: 0.05%
     if recent_avg > older_avg + 0.05 {
         "rising".to_string()
     }

@@ -1,6 +1,6 @@
 import { type Request, type Response, type NextFunction } from 'express';
 import { AIService } from '../services/ai.service.ts';
-import { type ArbitrageData, type ChartDataPoint } from '../lib/types.ts';
+import { type ArbitrageData, type ChartDataPoint } from '../types/types.ts';
 
 export class AIController {
 

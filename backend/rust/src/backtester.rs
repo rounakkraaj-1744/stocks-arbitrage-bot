@@ -47,10 +47,8 @@ pub fn run_monte_carlo(params: BacktestParams) -> BacktestResponse {
         for _ in 1..=params.days {
             let is_win = rng.random::<f64>() < params.win_rate;
             let pnl_pct = if is_win {
-                // Add some randomness to win
                 params.avg_win_pct * (0.5 + rng.random::<f64>())
             } else {
-                // Add some randomness to loss
                 params.avg_loss_pct * (0.5 + rng.random::<f64>())
             };
 

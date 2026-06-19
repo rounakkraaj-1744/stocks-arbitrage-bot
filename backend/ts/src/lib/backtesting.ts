@@ -1,4 +1,4 @@
-import { type ChartDataPoint, type Trade } from './types';
+import { type ChartDataPoint, type Trade } from '../types/types';
 
 export interface BacktestConfig {
     initialCapital: number;
@@ -32,7 +32,7 @@ export interface BacktestMetrics {
 export function runBacktest(data: ChartDataPoint[], config: BacktestConfig): BacktestMetrics {
     const trades: Trade[] = [];
     let capital = config.initialCapital;
-    let position: { type: 'LONG' | 'SHORT'; entryPrice: number; entryTime: number; spread: number } | null = null;
+    let position: { type: 'long' | 'short'; entryPrice: number; entryTime: number; spread: number } | null = null;
     let equity: number[] = [capital];
 
     for (let i = 1; i < data.length; i++) {
@@ -42,7 +42,7 @@ export function runBacktest(data: ChartDataPoint[], config: BacktestConfig): Bac
         if (!position) {
             if (current!.spread > config.threshold) {
                 position = {
-                    type: 'LONG',
+                    type: 'long',
                     entryPrice: current!.spot,
                     entryTime: current!.timestamp,
                     spread: current!.spread,
@@ -50,7 +50,7 @@ export function runBacktest(data: ChartDataPoint[], config: BacktestConfig): Bac
             }
             else if (current!.spread < -config.threshold) {
                 position = {
-                    type: 'SHORT',
+                    type: 'short',
                     entryPrice: current!.spot,
                     entryTime: current!.timestamp,
                     spread: current!.spread,
@@ -60,7 +60,7 @@ export function runBacktest(data: ChartDataPoint[], config: BacktestConfig): Bac
 
         if (position) {
             let shouldExit = false;
-            const currentProfit = position.type === 'LONG' ? ((current!.spot - position.entryPrice) / position.entryPrice) * 100 : ((position.entryPrice - current!.spot) / position.entryPrice) * 100;
+            const currentProfit = position.type === 'long' ? ((current!.spot - position.entryPrice) / position.entryPrice) * 100 : ((position.entryPrice - current!.spot) / position.entryPrice) * 100;
 
             if (config.stopLoss && currentProfit < -config.stopLoss) {
                 shouldExit = true;
@@ -69,13 +69,13 @@ export function runBacktest(data: ChartDataPoint[], config: BacktestConfig): Bac
             if (config.takeProfit && currentProfit > config.takeProfit)
                 shouldExit = true;
 
-            if (position.type === 'LONG' && current!.spread < 0)
+            if (position.type === 'long' && current!.spread < 0)
                 shouldExit = true;
-            else if (position.type === 'SHORT' && current!.spread > 0)
+            else if (position.type === 'short' && current!.spread > 0)
                 shouldExit = true;
 
             if (shouldExit) {
-                const grossProfit = (current!.spot - position.entryPrice) * (position.type === 'LONG' ? 1 : -1);
+                const grossProfit = (current!.spot - position.entryPrice) * (position.type === 'long' ? 1 : -1);
                 const commissionCost = (position.entryPrice + current!.spot) * (config.commission / 100);
                 const slippageCost = (position.entryPrice + current!.spot) * (config.slippage / 100);
                 const netProfit = grossProfit - commissionCost - slippageCost;
@@ -86,7 +86,6 @@ export function runBacktest(data: ChartDataPoint[], config: BacktestConfig): Bac
                     exitTime: current!.timestamp,
                     entryPrice: position.entryPrice,
                     exitPrice: current!.spot,
-                    spread: position.spread,
                     type: position.type,
                     profit: netProfit,
                     profitPercent,
@@ -113,14 +112,14 @@ export function runBacktest(data: ChartDataPoint[], config: BacktestConfig): Bac
     const largestLoss = losingTrades.length > 0 ? Math.min(...losingTrades.map(t => t.profit)) : 0;
 
     let maxDrawdown = 0;
-    let peak = equity[0];
+    let peak = equity[0] ?? capital;
     for (const value of equity) {
         if (value > peak) peak = value;
         const drawdown = ((peak - value) / peak) * 100;
         if (drawdown > maxDrawdown) maxDrawdown = drawdown;
     }
 
-    const returns = equity.slice(1).map((val, i) => (val - equity[i]) / equity[i]);
+    const returns = equity.slice(1).map((val, i) => (val - equity[i]!) / equity[i]!);
     const avgReturn = returns.reduce((a, b) => a + b, 0) / returns.length;
     const stdDev = Math.sqrt(returns.reduce((sum, r) => sum + Math.pow(r - avgReturn, 2), 0) / returns.length);
     const sharpeRatio = stdDev > 0 ? (avgReturn / stdDev) * Math.sqrt(252) : 0;

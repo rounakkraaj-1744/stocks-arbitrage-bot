@@ -3,7 +3,6 @@ import { prisma } from '../db/prisma.ts';
 
 const router = Router();
 
-// GET /api/trading/wallet
 router.get('/wallet', async (req: Request, res: Response) => {
   try {
     let wallet = await prisma.virtualWallet.findFirst();
@@ -16,12 +15,10 @@ router.get('/wallet', async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/trading/trade
 router.post('/trade', async (req: Request, res: Response) => {
   try {
     const { symbol, type, spotPrice, futuresPrice, quantity, spread } = req.body;
-    
-    // Simulate trade PnL or margin
+  
     const trade = await prisma.trade.create({
       data: {
         symbol,
@@ -30,7 +27,7 @@ router.post('/trade', async (req: Request, res: Response) => {
         futuresPrice,
         quantity,
         spread,
-        pnl: 0, // initial pnl is 0
+        pnl: 0,
       }
     });
 
@@ -40,7 +37,6 @@ router.post('/trade', async (req: Request, res: Response) => {
   }
 });
 
-// GET /api/trading/trades
 router.get('/trades', async (req: Request, res: Response) => {
   try {
     const trades = await prisma.trade.findMany({
@@ -53,7 +49,6 @@ router.get('/trades', async (req: Request, res: Response) => {
   }
 });
 
-// GET /api/trading/strategies
 router.get('/strategies', async (req: Request, res: Response) => {
   try {
     const strategies = await prisma.strategy.findMany();
@@ -63,7 +58,6 @@ router.get('/strategies', async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/trading/strategies
 router.post('/strategies', async (req: Request, res: Response) => {
   try {
     const { name, configuration } = req.body;
@@ -79,7 +73,6 @@ router.post('/strategies', async (req: Request, res: Response) => {
   }
 });
 
-// GET /api/trading/portfolio/metrics
 router.get('/portfolio/metrics', async (req: Request, res: Response) => {
   try {
     const metrics = await prisma.portfolioMetrics.findMany({
