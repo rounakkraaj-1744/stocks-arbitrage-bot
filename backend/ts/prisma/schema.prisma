@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  engineType = "library"
 }
 
 datasource db {
@@ -34,8 +35,8 @@ model Trade {
 model Strategy {
   id            String   @id @default(uuid())
   name          String   @unique
-  configuration String   // JSON string of config
-  status        String   @default("active") // active | inactive
+  configuration String
+  status        String   @default("active")
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }

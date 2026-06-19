@@ -107,7 +107,7 @@ export function AITradeAssistant({ stock, historicalData }: AITradeAssistantProp
                   <span>🎯</span>
                   AI Recommendation
                 </h3>
-                <span className="text-xs text-slate-400 font-medium">
+                <span className="text-xs text-slate-500 font-medium" suppressHydrationWarning>
                   {new Date(signal.timestamp).toLocaleTimeString('en-IN')}
                 </span>
               </div>

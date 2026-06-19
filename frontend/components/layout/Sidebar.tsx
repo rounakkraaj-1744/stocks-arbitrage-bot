@@ -12,7 +12,9 @@ import {
   FileText, 
   Settings, 
   HelpCircle,
-  LogOut
+  LogOut,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 const MENU_ITEMS = [
@@ -33,12 +35,18 @@ const BOTTOM_MENU = [
   { id: 'help', label: 'Help & Docs', icon: HelpCircle },
 ];
 
-export function Sidebar({ onMenuClick }: { onMenuClick?: (id: string) => void }) {
+interface SidebarProps {
+  onMenuClick?: (id: string) => void;
+  isCollapsed?: boolean;
+  onToggle?: () => void;
+}
+
+export function Sidebar({ onMenuClick, isCollapsed = false, onToggle }: SidebarProps) {
   return (
-    <div className="w-64 h-screen bg-[#0b1120] border-r border-[#1e293b] flex flex-col fixed left-0 top-0">
+    <div className={`${isCollapsed ? 'w-16' : 'w-64'} h-screen bg-[#0b1120] border-r border-[#1e293b] flex flex-col fixed left-0 top-0 transition-all duration-300 z-50`}>
       {/* Logo Area */}
-      <div className="h-16 flex items-center px-6 border-b border-[#1e293b]">
-        <div className="flex items-center gap-3">
+      <div className={`h-16 flex items-center ${isCollapsed ? 'justify-center px-0' : 'px-6 justify-between'} border-b border-[#1e293b]`}>
+        <div className={`flex items-center gap-3 ${isCollapsed ? 'hidden' : 'flex'}`}>
           <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-xl">
             M
           </div>
@@ -47,7 +55,21 @@ export function Sidebar({ onMenuClick }: { onMenuClick?: (id: string) => void })
             <span className="text-blue-500 text-[10px] tracking-widest font-semibold">TERMINAL</span>
           </div>
         </div>
+        {isCollapsed && (
+          <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-xl">
+            M
+          </div>
+        )}
+        <button onClick={onToggle} className={`text-slate-400 hover:text-white transition-colors ${isCollapsed ? 'hidden' : 'block'}`}>
+          <ChevronLeft size={18} />
+        </button>
       </div>
+
+      {isCollapsed && (
+        <button onClick={onToggle} className="w-full py-2 flex justify-center text-slate-400 hover:text-white transition-colors border-b border-[#1e293b]">
+          <ChevronRight size={18} />
+        </button>
+      )}
 
       {/* Main Navigation */}
       <div className="flex-1 overflow-y-auto py-4 px-3 flex flex-col gap-1">
@@ -55,17 +77,18 @@ export function Sidebar({ onMenuClick }: { onMenuClick?: (id: string) => void })
           <button
             key={item.id}
             onClick={() => onMenuClick?.(item.id)}
-            className={`flex items-center justify-between w-full px-3 py-2.5 rounded-lg transition-colors ${
+            className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} w-full px-3 py-2.5 rounded-lg transition-colors ${
               item.active 
                 ? 'bg-blue-600/10 text-blue-500' 
                 : 'text-slate-400 hover:bg-[#1e293b]/50 hover:text-slate-200'
             }`}
+            title={isCollapsed ? item.label : undefined}
           >
             <div className="flex items-center gap-3">
               <item.icon size={18} className={item.active ? 'text-blue-500' : 'text-slate-500'} />
-              <span className="text-sm font-medium">{item.label}</span>
+              {!isCollapsed && <span className="text-sm font-medium">{item.label}</span>}
             </div>
-            {item.badge && (
+            {!isCollapsed && item.badge && (
               <span className="text-[9px] font-bold bg-blue-600/20 text-blue-400 px-1.5 py-0.5 rounded border border-blue-500/20">
                 {item.badge}
               </span>
@@ -78,31 +101,39 @@ export function Sidebar({ onMenuClick }: { onMenuClick?: (id: string) => void })
         {BOTTOM_MENU.map((item) => (
           <button
             key={item.id}
-            className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-slate-400 hover:bg-[#1e293b]/50 hover:text-slate-200 transition-colors"
+            onClick={() => onMenuClick?.(item.id)}
+            className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-slate-400 hover:bg-[#1e293b]/50 hover:text-slate-200 transition-colors ${isCollapsed ? 'justify-center' : ''}`}
+            title={isCollapsed ? item.label : undefined}
           >
             <item.icon size={18} className="text-slate-500" />
-            <span className="text-sm font-medium">{item.label}</span>
+            {!isCollapsed && <span className="text-sm font-medium">{item.label}</span>}
           </button>
         ))}
       </div>
 
       {/* Bottom Status Area */}
-      <div className="p-4 border-t border-[#1e293b] bg-[#080d1a]">
-        <div className="flex flex-col gap-4">
-          <div>
-            <span className="text-slate-400 text-xs font-medium block mb-1">Market Hours</span>
-            <span className="text-slate-300 text-xs">09:15 AM - 03:30 PM IST</span>
+      <div className={`p-4 border-t border-[#1e293b] bg-[#080d1a] ${isCollapsed ? 'items-center flex flex-col gap-4' : ''}`}>
+        {!isCollapsed ? (
+          <div className="flex flex-col gap-4">
+            <div>
+              <span className="text-slate-400 text-xs font-medium block mb-1">Market Hours</span>
+              <span className="text-slate-300 text-xs">09:15 AM - 03:30 PM IST</span>
+            </div>
+            <div>
+              <span className="text-slate-400 text-xs font-medium block mb-1">Time to Close</span>
+              <span className="text-emerald-500 text-xl font-mono tracking-wider font-semibold">00:26:45</span>
+            </div>
+            
+            <button className="flex items-center gap-2 text-slate-400 hover:text-white mt-2 transition-colors">
+              <LogOut size={16} />
+              <span className="text-sm font-medium">Logout</span>
+            </button>
           </div>
-          <div>
-            <span className="text-slate-400 text-xs font-medium block mb-1">Time to Close</span>
-            <span className="text-emerald-500 text-xl font-mono tracking-wider font-semibold">00:26:45</span>
-          </div>
-          
-          <button className="flex items-center gap-2 text-slate-400 hover:text-white mt-2 transition-colors">
-            <LogOut size={16} />
-            <span className="text-sm font-medium">Logout</span>
+        ) : (
+          <button className="text-slate-400 hover:text-white transition-colors" title="Logout">
+            <LogOut size={18} />
           </button>
-        </div>
+        )}
       </div>
     </div>
   );

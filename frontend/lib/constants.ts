@@ -23,4 +23,4 @@ export const TIMEFRAME_INTERVALS = {
   '1h': 3600000,
 };
 
-export const WEBSOCKET_URL = "ws://localhost:3030/ws";
+export const WEBSOCKET_URL = "ws://127.0.0.1:3030/ws";

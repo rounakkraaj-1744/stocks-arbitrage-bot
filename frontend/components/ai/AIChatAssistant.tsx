@@ -166,14 +166,12 @@ export function AIChatAssistant({ currentData, selectedStock, onClose }: AIChatA
                     {msg.content}
                   </ReactMarkdown>
                 </div>
-                <div className={`text-[10px] mt-2 text-right ${
-                  msg.role === 'user' ? 'opacity-70' : 'opacity-50'
-                }`}>
+                <span className="text-[10px] text-slate-500 mt-1 block" suppressHydrationWarning>
                   {new Date(msg.timestamp).toLocaleTimeString('en-IN', { 
                     hour: '2-digit', 
                     minute: '2-digit' 
                   })}
-                </div>
+                </span>
               </div>
             </div>
           ))}

@@ -2,6 +2,8 @@ import React from 'react';
 import { Search, Plus } from 'lucide-react';
 import { type ArbitrageData } from '@/lib/types';
 
+import { ALL_STOCKS } from '@/lib/constants';
+
 interface WatchlistPanelProps {
   data: ArbitrageData[];
   selectedStock: string;
@@ -13,9 +15,15 @@ export function WatchlistPanel({ data, selectedStock, onSelect }: WatchlistPanel
     <div className="w-[300px] bg-[#111827] border border-[#1e293b] rounded-xl flex flex-col overflow-hidden">
       <div className="p-3 border-b border-[#1e293b] flex items-center justify-between">
         <span className="text-white font-medium text-sm">Watchlist</span>
-        <button className="text-slate-400 hover:text-white transition-colors">
-          <Plus size={16} />
-        </button>
+        <select 
+          value={selectedStock}
+          onChange={(e) => onSelect(e.target.value)}
+          className="bg-[#1e293b] text-xs text-slate-300 border border-[#334155] rounded px-2 py-1 outline-none"
+        >
+          {ALL_STOCKS.map(stock => (
+            <option key={stock} value={stock}>{stock}</option>
+          ))}
+        </select>
       </div>
       
       <div className="p-3 border-b border-[#1e293b] bg-[#0b1120]">

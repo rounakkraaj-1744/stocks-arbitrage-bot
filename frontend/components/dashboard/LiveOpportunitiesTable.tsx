@@ -85,7 +85,9 @@ export function LiveOpportunitiesTable({ data, onExport }: LiveOpportunitiesTabl
                   </span>
                 </td>
                 <td className="px-4 py-3 text-slate-400 text-xs text-right">
-                  {new Date(item.last_update).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                  <span suppressHydrationWarning>
+                    {new Date(item.last_update).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                  </span>
                 </td>
               </tr>
             ))}

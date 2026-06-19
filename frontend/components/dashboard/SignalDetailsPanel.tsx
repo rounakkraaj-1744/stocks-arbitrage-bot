@@ -56,7 +56,7 @@ export function SignalDetailsPanel({ stock, onAction }: SignalDetailsPanelProps)
           </div>
           <div className="flex justify-between items-center">
             <span className="text-slate-400 text-xs">Updated At</span>
-            <span className="text-slate-300 text-xs">{new Date(stock.last_update).toLocaleTimeString('en-IN')} IST</span>
+            <span className="text-slate-300 text-xs" suppressHydrationWarning>{new Date(stock.last_update).toLocaleTimeString('en-IN')} IST</span>
           </div>
         </div>
       </div>
@@ -64,16 +64,10 @@ export function SignalDetailsPanel({ stock, onAction }: SignalDetailsPanelProps)
       <div className="p-4 flex-1">
         <h4 className="text-white font-medium text-xs mb-3">Action</h4>
         <div className="flex gap-2 mb-4">
-          <button 
-            onClick={onAction}
-            className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold py-2 rounded transition-colors"
-          >
+          <button onClick={onAction} className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold py-2 rounded transition-colors">
             BUY SPOT (NSE)
           </button>
-          <button 
-            onClick={onAction}
-            className="flex-1 bg-red-500 hover:bg-red-600 text-white text-xs font-bold py-2 rounded transition-colors"
-          >
+          <button onClick={onAction} className="flex-1 bg-red-500 hover:bg-red-600 text-white text-xs font-bold py-2 rounded transition-colors">
             SELL FUTURES (NSE)
           </button>
         </div>
