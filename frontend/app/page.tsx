@@ -23,6 +23,9 @@ import { AITradeAssistant } from '@/components/ai/AITradeAssistant';
 import { AIChatAssistant } from '@/components/ai/AIChatAssistant';
 import { AIPortfolioOptimizer } from '@/components/ai/AIPortfolioOptimizer';
 import { PredictionModal } from '@/components/modals/PredictionModal';
+import { PaperTradeModal } from '@/components/modals/PaperTradeModal';
+import { StrategyBuilder } from '@/components/modals/StrategyBuilder';
+import { PortfolioDashboard } from '@/components/modals/PortfolioDashboard';
 
 export default function Home() {
   const { status, currentData, chartData, setChartData, setCurrentData } = useWebSocket();
@@ -54,6 +57,9 @@ export default function Home() {
   const [showAIChat, setShowAIChat] = useState(false);
   const [showPortfolioOptimizer, setShowPortfolioOptimizer] = useState(false);
   const [showPredictionModal, setShowPredictionModal] = useState(false);
+  const [showPaperTrade, setShowPaperTrade] = useState(false);
+  const [showStrategyBuilder, setShowStrategyBuilder] = useState(false);
+  const [showPortfolio, setShowPortfolio] = useState(false);
 
   useLocalStorage(STORAGE_KEYS.SELECTED_STOCK, selectedStock);
   useLocalStorage(STORAGE_KEYS.TIMEFRAME, timeframe);
@@ -126,6 +132,9 @@ export default function Home() {
           onShowAIChat={() => setShowAIChat(true)}
           onShowPortfolioOptimizer={() => setShowPortfolioOptimizer(true)}
           onShowPrediction={() => setShowPredictionModal(true)}
+          onShowPaperTrade={() => setShowPaperTrade(true)}
+          onShowStrategyBuilder={() => setShowStrategyBuilder(true)}
+          onShowPortfolio={() => setShowPortfolio(true)}
         />
 
         {/* Summary */}
@@ -400,6 +409,27 @@ export default function Home() {
           stock={selectedData}
           historicalData={selectedChartData}
           onClose={() => setShowPredictionModal(false)}
+        />
+      )}
+
+      {showPaperTrade && selectedData && (
+        <PaperTradeModal
+          selectedStock={selectedStock}
+          currentSpot={selectedData.spot_price}
+          currentFutures={selectedData.futures_price}
+          onClose={() => setShowPaperTrade(false)}
+        />
+      )}
+
+      {showStrategyBuilder && (
+        <StrategyBuilder
+          onClose={() => setShowStrategyBuilder(false)}
+        />
+      )}
+
+      {showPortfolio && (
+        <PortfolioDashboard
+          onClose={() => setShowPortfolio(false)}
         />
       )}
     </div>
