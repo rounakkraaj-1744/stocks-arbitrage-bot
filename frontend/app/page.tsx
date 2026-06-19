@@ -26,6 +26,7 @@ import { PredictionModal } from '@/components/modals/PredictionModal';
 import { PaperTradeModal } from '@/components/modals/PaperTradeModal';
 import { StrategyBuilder } from '@/components/modals/StrategyBuilder';
 import { PortfolioDashboard } from '@/components/modals/PortfolioDashboard';
+import { SentimentDashboard } from '@/components/modals/SentimentDashboard';
 
 export default function Home() {
   const { status, currentData, chartData, setChartData, setCurrentData } = useWebSocket();
@@ -60,6 +61,7 @@ export default function Home() {
   const [showPaperTrade, setShowPaperTrade] = useState(false);
   const [showStrategyBuilder, setShowStrategyBuilder] = useState(false);
   const [showPortfolio, setShowPortfolio] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false);
 
   useLocalStorage(STORAGE_KEYS.SELECTED_STOCK, selectedStock);
   useLocalStorage(STORAGE_KEYS.TIMEFRAME, timeframe);
@@ -135,6 +137,7 @@ export default function Home() {
           onShowPaperTrade={() => setShowPaperTrade(true)}
           onShowStrategyBuilder={() => setShowStrategyBuilder(true)}
           onShowPortfolio={() => setShowPortfolio(true)}
+          onShowAnalytics={() => setShowAnalytics(true)}
         />
 
         {/* Summary */}
@@ -430,6 +433,14 @@ export default function Home() {
       {showPortfolio && (
         <PortfolioDashboard
           onClose={() => setShowPortfolio(false)}
+        />
+      )}
+
+      {showAnalytics && selectedData && (
+        <SentimentDashboard
+          selectedStock={selectedStock}
+          historicalSpreads={selectedChartData.map(d => d.spread)}
+          onClose={() => setShowAnalytics(false)}
         />
       )}
     </div>

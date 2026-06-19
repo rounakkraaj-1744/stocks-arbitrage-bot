@@ -5,6 +5,7 @@ mod trend_tracker;
 mod data_logger;
 mod exchange_api;
 mod backtester;
+mod options_arbitrage;
 
 use warp::Filter;
 use warp::ws::{Message, WebSocket};
@@ -112,7 +113,25 @@ async fn main() {
             warp::reply::json(&result)
         });
 
-    let routes = ws_route.or(arbitrage_route).or(backtest_route)
+    let pcp_route = warp::path("api")
+        .and(warp::path("options"))
+        .and(warp::path("pcp"))
+        .and(warp::post())
+        .and(warp::body::json())
+        .map(|req: serde_json::Value| {
+            let spot = req["spot"].as_f64().unwrap_or(0.0);
+            let futures = req["futures"].as_f64().unwrap_or(0.0);
+            let call = req["call_price"].as_f64().unwrap_or(0.0);
+            let put = req["put_price"].as_f64().unwrap_or(0.0);
+            let strike = req["strike"].as_f64().unwrap_or(0.0);
+            let r = req["risk_free_rate"].as_f64().unwrap_or(0.05);
+            let t = req["time_to_expiry_years"].as_f64().unwrap_or(0.08);
+
+            let opp = options_arbitrage::detect_put_call_parity(spot, futures, call, put, strike, r, t);
+            warp::reply::json(&opp)
+        });
+
+    let routes = ws_route.or(arbitrage_route).or(backtest_route).or(pcp_route)
         .with(warp::cors().allow_any_origin().allow_headers(vec!["content-type"]).allow_methods(vec!["GET", "POST"]));
 
     info!("Server running on http://127.0.0.1:3030");

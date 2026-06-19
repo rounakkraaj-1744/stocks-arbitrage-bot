@@ -23,7 +23,9 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "groq-sdk": "^0.34.0",
-    "openai": "^6.6.0"
+    "ml-regression": "^6.3.0",
+    "openai": "^6.6.0",
+    "rss-parser": "^3.13.0"
   },
   "scripts": {
     "dev": "nodemon index.ts"

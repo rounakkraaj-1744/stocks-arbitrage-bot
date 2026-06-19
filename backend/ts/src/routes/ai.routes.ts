@@ -7,5 +7,7 @@ router.post('/trade-signal', AIController.generateTradeSignal);
 router.post('/market-analysis', AIController.analyzeMarket);
 router.post('/chat', AIController.chat);
 router.post('/optimize-portfolio', AIController.optimizePortfolio);
+router.get('/sentiment', AIController.getSentiment);
+router.post('/ml-prediction', AIController.getMLPrediction);
 
 export default router;

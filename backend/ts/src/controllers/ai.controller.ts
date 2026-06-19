@@ -106,4 +106,36 @@ export class AIController {
       next(error);
     }
   }
+
+  static async getSentiment(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { symbol } = req.query;
+      if (!symbol || typeof symbol !== 'string') {
+        return res.status(400).json({ success: false, error: 'Missing symbol' });
+      }
+
+      const { fetchNewsSentiment } = await import('../services/sentiment.service.ts');
+      const sentiment = await fetchNewsSentiment(symbol);
+
+      res.json({ success: true, data: sentiment });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getMLPrediction(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { spreads } = req.body as { spreads: number[] };
+      if (!spreads || !Array.isArray(spreads)) {
+        return res.status(400).json({ success: false, error: 'Missing spreads array' });
+      }
+
+      const { predictNextSpread } = await import('../services/ml.service.ts');
+      const prediction = predictNextSpread(spreads);
+
+      res.json({ success: true, data: prediction });
+    } catch (error) {
+      next(error);
+    }
+  }
 }

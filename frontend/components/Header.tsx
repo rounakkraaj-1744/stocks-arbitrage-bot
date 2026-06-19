@@ -21,6 +21,7 @@ interface HeaderProps {
   onShowPaperTrade: () => void;
   onShowStrategyBuilder: () => void;
   onShowPortfolio: () => void;
+  onShowAnalytics: () => void;
 }
 
 export function Header({
@@ -42,6 +43,7 @@ export function Header({
   onShowPaperTrade,
   onShowStrategyBuilder,
   onShowPortfolio,
+  onShowAnalytics,
 }: HeaderProps) {
   return (
     <div className="mb-8">
@@ -145,6 +147,15 @@ export function Header({
                 <span className="text-base">🔮</span>
                 <span className="font-semibold">Predict</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-purple-500/10 to-pink-500/0 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"></div>
+              </button>
+              
+              <button
+                onClick={onShowAnalytics}
+                className="group relative px-4 py-2 bg-gradient-to-r from-blue-500/15 to-cyan-500/15 hover:from-blue-500/25 hover:to-cyan-500/25 text-blue-200 rounded-lg border border-blue-400/30 hover:border-blue-400/50 transition-all text-sm font-medium flex items-center gap-2 shadow-lg hover:shadow-blue-500/30"
+              >
+                <span className="text-base">🧠</span>
+                <span className="font-semibold">Analytics</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-blue-500/10 to-cyan-500/0 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"></div>
               </button>
               
               <button
