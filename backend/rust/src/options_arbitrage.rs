@@ -35,7 +35,7 @@ pub fn detect_put_call_parity(
     // simplified synthetic futures: C - P + X
     
     let discount_factor = (1.0 + risk_free_rate).powf(time_to_expiry_years);
-    let pv_strike = strike / discount_factor;
+    let _pv_strike = strike / discount_factor;
     let synthetic_futures = call_price - put_price + strike; // ignoring continuous yield for simple detection
 
     let deviation = (synthetic_futures - futures).abs() / futures * 100.0;

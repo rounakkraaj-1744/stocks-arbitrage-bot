@@ -3,7 +3,7 @@ mod arbitrage_detector;
 mod profit_calculator;
 mod trend_tracker;
 mod data_logger;
-mod exchange_api;
+
 mod backtester;
 mod options_arbitrage;
 
